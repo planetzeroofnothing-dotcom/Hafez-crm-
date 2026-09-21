@@ -1,0 +1,1250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dealbook — Buyer CRM</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Zilla+Slab:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#211d18;
+    --ink-soft:#5a5346;
+    --paper:#f3eee2;
+    --card:#fbf8f1;
+    --line:#ddd4bd;
+    --brick:#a8402a;
+    --brick-dark:#8a3320;
+    --teal:#2f4b3c;
+    --teal-soft:#e2e9e2;
+    --gold:#b8893c;
+    --shadow: 0 1px 2px rgba(33,29,24,.06), 0 6px 20px rgba(33,29,24,.06);
+  }
+  *{box-sizing:border-box;}
+  html,body{height:100%;}
+  body{
+    margin:0; background:var(--paper); color:var(--ink);
+    font-family:'Source Sans 3', system-ui, sans-serif; -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3,.serif{font-family:'Zilla Slab', Georgia, serif;}
+  a{color:inherit;}
+  button{font-family:inherit;cursor:pointer;}
+
+  .app{display:flex; min-height:100vh;}
+
+  .sidebar{
+    width:220px; flex-shrink:0; background:var(--ink); color:#efe8d8;
+    display:flex; flex-direction:column; padding:24px 0;
+  }
+  .brand{
+    font-family:'Zilla Slab', serif; font-size:22px; font-weight:600;
+    padding:0 24px 22px 24px; border-bottom:1px solid rgba(239,232,216,.14);
+    margin-bottom:14px; letter-spacing:.2px;
+  }
+  .brand span{color:var(--gold);}
+  .nav-item{
+    display:flex; align-items:center; gap:10px; padding:12px 24px; font-size:15px;
+    color:#cfc6ae; border-left:3px solid transparent; transition:background .15s, color .15s; cursor:pointer;
+  }
+  .nav-item:hover{background:rgba(239,232,216,.06); color:#fff;}
+  .nav-item.active{background:rgba(239,232,216,.09); color:#fff; border-left-color:var(--gold);}
+  .nav-item .dot{width:7px;height:7px;border-radius:50%;background:var(--brick); display:none;}
+  .nav-item .dot.show{display:inline-block;}
+  .sidebar-foot{margin-top:auto; padding:14px 24px 0 24px; font-size:12px; color:#8b8271; border-top:1px solid rgba(239,232,216,.1);}
+
+  .main{flex:1; min-width:0; padding:20px 40px 100px; max-width:1180px;}
+  .page{display:none;}
+  .page.active{display:block;}
+
+  .topbar{display:flex; justify-content:flex-end; align-items:center; gap:10px; margin-bottom:6px;}
+  .bell-wrap{position:relative;}
+  .bell-btn{
+    background:var(--card); border:1px solid var(--line); border-radius:50%;
+    width:38px; height:38px; display:flex; align-items:center; justify-content:center; position:relative;
+  }
+  .bell-btn .count{
+    position:absolute; top:-4px; right:-4px; background:var(--brick); color:#fff; font-size:10.5px;
+    font-weight:700; min-width:16px; height:16px; border-radius:8px; display:flex; align-items:center; justify-content:center; padding:0 3px;
+  }
+  .bell-drop{
+    display:none; position:absolute; right:0; top:46px; width:300px; background:var(--card);
+    border:1px solid var(--line); border-radius:8px; box-shadow:var(--shadow); z-index:40; max-height:360px; overflow-y:auto;
+  }
+  .bell-drop.show{display:block;}
+  .bell-drop .bd-title{padding:10px 14px; font-size:12.5px; font-weight:700; color:var(--ink-soft); border-bottom:1px solid var(--line);}
+  .bell-drop .empty{padding:18px 14px;}
+
+  .page-head{display:flex; align-items:baseline; justify-content:space-between; margin-bottom:22px; flex-wrap:wrap; gap:12px;}
+  .page-head h1{font-size:28px; margin:0; font-weight:600;}
+  .page-head p{margin:4px 0 0; color:var(--ink-soft); font-size:14px;}
+
+  .btn{
+    border:1px solid var(--ink); background:var(--ink); color:#fff; padding:9px 16px; border-radius:3px;
+    font-size:14px; font-weight:600; display:inline-flex; align-items:center; gap:6px;
+  }
+  .btn:hover{background:#38332b;}
+  .btn.brick{background:var(--brick); border-color:var(--brick);}
+  .btn.brick:hover{background:var(--brick-dark);}
+  .btn.ghost{background:transparent; color:var(--ink); border-color:var(--line);}
+  .btn.ghost:hover{background:#eee6d2;}
+  .btn.sm{padding:6px 11px; font-size:13px;}
+  .btn.danger{background:transparent; border-color:var(--line); color:var(--brick);}
+  .btn.danger:hover{background:#f4e2dc;}
+
+  .card{background:var(--card); border:1px solid var(--line); border-radius:6px; box-shadow:var(--shadow);}
+  .grid{display:grid; gap:18px;}
+  .grid.cols-3{grid-template-columns:repeat(3,1fr);}
+  .grid.cols-2{grid-template-columns:2fr 1fr;}
+  @media (max-width:900px){ .grid.cols-3, .grid.cols-2{grid-template-columns:1fr;} }
+
+  .stat{padding:18px 20px;}
+  .stat .num{font-family:'Zilla Slab',serif; font-size:32px; font-weight:600; line-height:1;}
+  .stat .label{color:var(--ink-soft); font-size:13px; margin-top:6px;}
+
+  .section-title{font-size:13px; color:var(--ink-soft); font-weight:600; margin:0 0 10px;}
+
+  .task-row, .buyer-row{display:flex; align-items:flex-start; gap:12px; padding:13px 16px; border-bottom:1px solid var(--line);}
+  .task-row:last-child, .buyer-row:last-child{border-bottom:none;}
+  .task-check{width:19px;height:19px; border-radius:50%; border:2px solid var(--line); flex-shrink:0; margin-top:2px; background:#fff; cursor:pointer;}
+  .task-check.done{background:var(--teal); border-color:var(--teal);}
+  .task-body{flex:1; min-width:0;}
+  .task-title{font-weight:600; font-size:14.5px;}
+  .task-title.done{text-decoration:line-through; color:var(--ink-soft);}
+  .task-meta{font-size:12.5px; color:var(--ink-soft); margin-top:2px;}
+  .badge{display:inline-block; font-size:11.5px; font-weight:600; padding:2px 8px; border-radius:20px; letter-spacing:.2px;}
+  .badge.overdue{background:#f4e2dc; color:var(--brick-dark);}
+  .badge.today{background:#f2e6c9; color:#7a5a1c;}
+  .badge.hot{background:#f4e2dc; color:var(--brick-dark);}
+  .badge.warm{background:#f2e6c9; color:#7a5a1c;}
+  .badge.cold{background:var(--teal-soft); color:var(--teal);}
+  .badge.flag{background:var(--teal-soft); color:var(--teal);}
+  .badge.flag.off{background:#eee7d4; color:#a89f8a;}
+
+  .empty{padding:26px 16px; text-align:center; color:var(--ink-soft); font-size:14px;}
+
+  input, select, textarea{
+    font-family:inherit; font-size:14px; padding:9px 11px; border:1px solid var(--line);
+    border-radius:4px; background:#fff; color:var(--ink); width:100%;
+  }
+  input:focus, select:focus, textarea:focus{outline:2px solid var(--gold); outline-offset:0;}
+  label{font-size:12.5px; font-weight:600; color:var(--ink-soft); display:block; margin-bottom:5px;}
+  .field{margin-bottom:14px; position:relative;}
+  .field-row{display:grid; grid-template-columns:1fr 1fr; gap:12px;}
+
+  .field-note{font-size:11.5px; color:var(--ink-soft); margin-top:4px;}
+  .geo-status{font-size:11.5px; margin-top:4px; color:var(--teal);}
+  .geo-status.err{color:var(--brick-dark);}
+
+  .flag-row{display:flex; gap:18px; padding:2px 0 4px;}
+  .flag-check{display:flex; align-items:center; gap:8px; font-size:13.5px; font-weight:600; color:var(--ink); cursor:pointer;}
+  .flag-check input{width:17px; height:17px; padding:0; accent-color:var(--teal);}
+
+  .modal-bg{display:none; position:fixed; inset:0; background:rgba(33,29,24,.45); align-items:flex-start; justify-content:center; padding:40px 16px; overflow-y:auto; z-index:50;}
+  .modal-bg.show{display:flex;}
+  .modal{background:var(--card); border-radius:8px; width:100%; max-width:560px; padding:26px 28px; box-shadow:0 20px 60px rgba(0,0,0,.25);}
+  .modal h2{margin:0 0 16px; font-size:20px;}
+  .modal-actions{display:flex; justify-content:flex-end; gap:10px; margin-top:18px;}
+
+  .rating-row{display:flex; align-items:center; gap:12px;}
+  .rating-row input[type=range]{flex:1;}
+  .rating-num{font-family:'Zilla Slab',serif; font-weight:700; font-size:20px; width:28px; text-align:center;}
+
+  .chip-list{display:flex; flex-wrap:wrap; gap:6px; margin-top:6px;}
+  .chip{background:var(--teal-soft); color:var(--teal); font-size:12.5px; padding:4px 10px; border-radius:20px; display:flex; align-items:center; gap:6px;}
+  .chip button{background:none; border:none; color:var(--teal); font-size:14px; line-height:1; padding:0;}
+
+  .offer-item{border:1px solid var(--line); border-radius:5px; padding:10px 12px; margin-top:8px; font-size:13.5px; background:#fff; display:flex; justify-content:space-between; align-items:flex-start; gap:10px;}
+  .offer-item .oline1{font-weight:600;}
+  .offer-item .onotes{color:var(--ink-soft); margin-top:3px;}
+  .offer-item button{background:none; border:none; color:var(--brick); font-size:16px; line-height:1; padding:2px;}
+
+  .search-bar{display:flex; gap:10px; margin-bottom:18px;}
+  .search-bar input{flex:1;}
+
+  .buyer-name{font-weight:700; font-size:15px;}
+  .buyer-sub{font-size:12.5px; color:var(--ink-soft); margin-top:2px;}
+  .buyer-flags{display:flex; gap:14px; margin-top:6px;}
+  .buyer-flags label{display:flex; align-items:center; gap:5px; font-size:12px; font-weight:600; color:var(--ink-soft); margin:0; cursor:pointer;}
+  .buyer-flags input{width:15px; height:15px; padding:0; accent-color:var(--teal);}
+  .buyer-actions{display:flex; gap:6px; flex-shrink:0;}
+
+  .banner{background:#2f4b3c; color:#eef4ee; padding:12px 18px; border-radius:6px; display:flex; justify-content:space-between; align-items:center; margin-bottom:18px; font-size:14px;}
+  .banner.brick{background:var(--brick);}
+  .banner button{background:rgba(255,255,255,.15); border:none; color:#fff; padding:5px 10px; border-radius:4px; font-size:12.5px;}
+
+  .key-note{font-size:12.5px; color:var(--ink-soft); margin-top:6px; line-height:1.5;}
+  .toast{
+    position:fixed; bottom:20px; left:20px; background:var(--ink); color:#fff; padding:12px 18px; border-radius:6px;
+    font-size:13.5px; box-shadow:0 10px 30px rgba(0,0,0,.25); opacity:0; transform:translateY(8px); transition:.25s; pointer-events:none; z-index:100;
+  }
+  .toast.show{opacity:1; transform:translateY(0);}
+
+  .offer-group{margin-bottom:24px;}
+  .offer-group h3{font-size:15px; margin:0 0 10px; display:flex; align-items:center; gap:8px;}
+  .offer-group h3 .cnt{font-size:11.5px; background:var(--teal-soft); color:var(--teal); padding:2px 8px; border-radius:20px; font-weight:600;}
+
+  .city-heading{font-size:16px; font-weight:700; padding:14px 16px 6px;}
+  .city-count{font-size:12.5px; color:var(--ink-soft); font-weight:400;}
+
+  /* ---- Floating Gemini widget ---- */
+  #geminiBubble{
+    position:fixed; bottom:22px; right:22px; width:56px; height:56px; border-radius:50%;
+    background:var(--brick); color:#fff; display:flex; align-items:center; justify-content:center;
+    box-shadow:0 8px 24px rgba(168,64,42,.45); z-index:60; border:none; font-size:24px;
+  }
+  #geminiBubble:hover{background:var(--brick-dark);}
+  #geminiBubble .pulse{
+    position:absolute; top:-3px; right:-3px; width:12px; height:12px; border-radius:50%; background:var(--gold);
+    display:none; border:2px solid var(--paper);
+  }
+  #geminiBubble .pulse.show{display:block;}
+
+  #geminiPanel{
+    position:fixed; bottom:90px; right:22px; width:380px; max-width:calc(100vw - 40px);
+    height:520px; max-height:calc(100vh - 130px); background:var(--card); border:1px solid var(--line);
+    border-radius:12px; box-shadow:0 20px 60px rgba(0,0,0,.3); z-index:60; display:none;
+    flex-direction:column; overflow:hidden;
+  }
+  #geminiPanel.show{display:flex;}
+  .gp-head{background:var(--ink); color:#efe8d8; padding:13px 16px; display:flex; justify-content:space-between; align-items:center; flex-shrink:0;}
+  .gp-head .t{font-family:'Zilla Slab',serif; font-size:16px; font-weight:600;}
+  .gp-head .t span{color:var(--gold);}
+  .gp-close{background:none; border:none; color:#cfc6ae; font-size:18px; padding:2px 6px;}
+  .gp-log{flex:1; overflow-y:auto; padding:14px 14px 6px;}
+  .ai-msg{max-width:86%; padding:10px 13px; border-radius:10px; margin-bottom:11px; font-size:13.8px; line-height:1.5; white-space:pre-wrap;}
+  .ai-msg.user{background:var(--ink); color:#fff; margin-left:auto; border-bottom-right-radius:2px;}
+  .ai-msg.ai{background:var(--teal-soft); color:#1c2f26; border-bottom-left-radius:2px;}
+  .ai-msg.err{background:#f4e2dc; color:var(--brick-dark);}
+  .ai-msg.sys{background:transparent; color:var(--ink-soft); font-size:12px; text-align:center; margin:0 auto 10px; max-width:100%;}
+  .gp-input-row{display:flex; gap:8px; padding:10px; border-top:1px solid var(--line); flex-shrink:0;}
+  .gp-input-row textarea{resize:none; height:40px; font-size:13.8px; padding:8px 10px;}
+  .gp-input-row button{flex-shrink:0;}
+  .gp-keywarning{padding:10px 14px; background:#f2e6c9; color:#7a5a1c; font-size:12.5px; flex-shrink:0;}
+
+  ::-webkit-scrollbar{width:9px;}
+  ::-webkit-scrollbar-thumb{background:#cfc4a4; border-radius:6px;}
+</style>
+</head>
+<body>
+
+<div class="app">
+  <div class="sidebar">
+    <div class="brand">Deal<span>book</span></div>
+    <div class="nav-item active" data-page="dashboard">Dashboard</div>
+    <div class="nav-item" data-page="buyers">Buyers</div>
+    <div class="nav-item" data-page="offers">Offers</div>
+    <div class="nav-item" data-page="tasks">Tasks <span class="dot" id="taskDot"></span></div>
+    <div class="nav-item" data-page="city">By City</div>
+    <div class="nav-item" data-page="settings">Settings</div>
+    <div class="sidebar-foot">Your data stays in this browser only.</div>
+  </div>
+
+  <div class="main">
+    <div class="topbar">
+      <div class="bell-wrap">
+        <button class="bell-btn" onclick="toggleBell()">🔔<span class="count" id="bellCount" style="display:none;">0</span></button>
+        <div class="bell-drop" id="bellDrop">
+          <div class="bd-title">Reminders</div>
+          <div id="bellList"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DASHBOARD -->
+    <div class="page active" id="page-dashboard">
+      <div class="page-head">
+        <div><h1>Dashboard</h1><p id="todayDate"></p></div>
+        <button class="btn brick" onclick="openTaskModal()">+ New task</button>
+      </div>
+
+      <div id="dueBanner"></div>
+      <div id="notifPromptBanner"></div>
+
+      <div class="grid cols-3" style="margin-bottom:22px;">
+        <div class="card stat"><div class="num" id="statBuyers">0</div><div class="label">Buyers tracked</div></div>
+        <div class="card stat"><div class="num" id="statHot">0</div><div class="label">Hot leads</div></div>
+        <div class="card stat"><div class="num" id="statTasksToday">0</div><div class="label">Tasks due today</div></div>
+      </div>
+
+      <div class="grid cols-2">
+        <div class="card" style="padding:18px 20px;">
+          <div class="section-title">Today &amp; overdue tasks</div>
+          <div id="dashTaskList"></div>
+        </div>
+        <div class="card" style="padding:18px 20px;">
+          <div class="section-title">Hot leads</div>
+          <div id="dashHotList"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- BUYERS -->
+    <div class="page" id="page-buyers">
+      <div class="page-head">
+        <div><h1>Buyers</h1><p>Every buyer, their rating, and their offer history.</p></div>
+        <button class="btn brick" onclick="openBuyerModal()">+ Add buyer</button>
+      </div>
+      <div class="search-bar"><input id="buyerSearch" placeholder="Search by name, city, state or address..." oninput="renderBuyers()"></div>
+      <div class="card" id="buyerList"></div>
+    </div>
+
+    <!-- OFFERS -->
+    <div class="page" id="page-offers">
+      <div class="page-head">
+        <div><h1>Offers</h1><p>Every offer, laid out by when it landed — today, tomorrow, and beyond.</p></div>
+      </div>
+      <div id="offersTimeline"></div>
+    </div>
+
+    <!-- TASKS -->
+    <div class="page" id="page-tasks">
+      <div class="page-head">
+        <div><h1>Tasks</h1><p>Reminders you set for yourself.</p></div>
+        <button class="btn brick" onclick="openTaskModal()">+ New task</button>
+      </div>
+      <div class="card" id="taskList"></div>
+    </div>
+
+    <!-- BY CITY -->
+    <div class="page" id="page-city">
+      <div class="page-head">
+        <div><h1>By city</h1><p>Open a city to see every buyer who's offered or shown interest there.</p></div>
+      </div>
+      <div class="search-bar">
+        <input id="citySearch" list="cityDatalist" placeholder="Type any city, e.g. Midland, TX or Marfa, TX" oninput="onCityFieldInput(this,'cityDatalist')">
+        <button class="btn ghost" onclick="renderCityResults()">Search</button>
+      </div>
+      <div class="card" id="cityResults"></div>
+    </div>
+
+    <!-- SETTINGS -->
+    <div class="page" id="page-settings">
+      <div class="page-head"><div><h1>Settings</h1><p>Connect your Gemini API key and manage notifications.</p></div></div>
+      <div class="card" style="padding:20px 22px; max-width:520px;">
+        <div class="section-title">Gemini API key</div>
+        <div class="field">
+          <input type="password" id="geminiKeyInput" placeholder="Paste your Gemini API key">
+          <div class="key-note">
+            Get a free key at <a href="https://aistudio.google.com/apikey" target="_blank" style="color:var(--brick);">aistudio.google.com/apikey</a>.
+            Stored only in this browser's local storage — it's sent directly to Google's API and nowhere else.
+            The assistant (bottom-right bubble) can read and change everything in Dealbook: add/edit/delete buyers, offers and tasks on your behalf when you ask it to.
+          </div>
+        </div>
+        <button class="btn brick sm" onclick="saveGeminiKey()">Save key</button>
+        <button class="btn ghost sm" onclick="testGeminiKey()">Test connection</button>
+        <span id="keySavedNote" style="font-size:13px; color:var(--teal); margin-left:10px;"></span>
+      </div>
+
+      <div class="card" style="padding:20px 22px; max-width:520px; margin-top:16px;">
+        <div class="section-title">Desktop notifications</div>
+        <p style="font-size:13.5px; color:var(--ink-soft); margin-top:0;">
+          Get a browser notification the moment a task comes due, while this tab is open.
+          Browsers won't deliver notifications once the tab or computer is fully closed — the reminder will be waiting for you under Tasks and the bell icon next time you open Dealbook.
+        </p>
+        <button class="btn ghost sm" id="notifBtn" onclick="requestNotifPermission()">Enable notifications</button>
+      </div>
+
+      <div class="card" style="padding:20px 22px; max-width:520px; margin-top:16px;">
+        <div class="section-title">Data</div>
+        <p style="font-size:13.5px; color:var(--ink-soft); margin-top:0;">Everything is saved locally in this browser. Clearing your browser data will erase it.</p>
+        <button class="btn danger sm" onclick="if(confirm('Erase all buyers and tasks? This cannot be undone.')){localStorage.clear();location.reload();}">Erase all data</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<datalist id="cityDatalist"></datalist>
+
+<!-- Buyer Modal -->
+<div class="modal-bg" id="buyerModalBg">
+  <div class="modal">
+    <h2 id="buyerModalTitle">Add buyer</h2>
+    <input type="hidden" id="buyerId">
+    <div class="field-row">
+      <div class="field"><label>Name</label><input id="buyerName" placeholder="e.g. Mike Alvarez"></div>
+      <div class="field"><label>Phone</label><input id="buyerPhone" placeholder="(214) 555-0192"></div>
+    </div>
+    <div class="field">
+      <label>Address</label>
+      <input id="buyerAddress" placeholder="Street address (if they gave you one)" onblur="autofillFromAddress()">
+      <div class="geo-status" id="geoStatus"></div>
+    </div>
+    <div class="field-row">
+      <div class="field"><label>City</label><input id="buyerCity" list="cityDatalist" placeholder="Any city — Dallas, Marfa, Muleshoe..." oninput="onCityFieldInput(this,'cityDatalist')"></div>
+      <div class="field"><label>State</label><input id="buyerState" placeholder="TX" maxlength="2" style="text-transform:uppercase;"></div>
+    </div>
+    <div class="field">
+      <label>Status</label>
+      <select id="buyerStatus">
+        <option value="hot">Hot lead</option>
+        <option value="warm">Warm</option>
+        <option value="cold">Cold</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>Rating (how good is this buyer to work with?)</label>
+      <div class="rating-row">
+        <input type="range" min="1" max="10" value="7" id="buyerRating" oninput="document.getElementById('ratingNum').textContent=this.value">
+        <div class="rating-num" id="ratingNum">7</div>
+      </div>
+    </div>
+    <div class="field">
+      <label>This buyer</label>
+      <div class="flag-row">
+        <label class="flag-check"><input type="checkbox" id="buyerSawShowing"> Saw the house (showing)</label>
+        <label class="flag-check"><input type="checkbox" id="buyerMadeOffer"> Made an offer</label>
+      </div>
+    </div>
+    <div class="field">
+      <label>Favorite locations / areas they like</label>
+      <input id="favInput" placeholder="Type an area and press Enter" onkeydown="if(event.key==='Enter'){event.preventDefault();addFavChip();}">
+      <div class="chip-list" id="favChipList"></div>
+    </div>
+    <div class="field">
+      <label>Notes</label>
+      <textarea id="buyerNotes" rows="2" placeholder="Anything worth remembering about them"></textarea>
+    </div>
+
+    <div class="field">
+      <label>Offers / deals made</label>
+      <div id="offerListEdit"></div>
+      <div class="field-row" style="margin-top:8px;">
+        <input id="offerLocation" placeholder="Property / area (e.g. Oak Cliff, Dallas)">
+        <input id="offerAmount" placeholder="Amount (e.g. $185,000)">
+      </div>
+      <div class="field-row" style="margin-top:8px;">
+        <input id="offerDate" type="date">
+        <input id="offerNotes" placeholder="Notes (optional)">
+      </div>
+      <button class="btn ghost sm" style="margin-top:8px;" onclick="addOfferToEdit()">+ Add this offer</button>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn ghost" onclick="closeBuyerModal()">Cancel</button>
+      <button class="btn danger" id="buyerDeleteBtn" style="display:none;" onclick="deleteBuyerFromModal()">Delete</button>
+      <button class="btn brick" onclick="saveBuyer()">Save buyer</button>
+    </div>
+  </div>
+</div>
+
+<!-- Task Modal -->
+<div class="modal-bg" id="taskModalBg">
+  <div class="modal" style="max-width:460px;">
+    <h2 id="taskModalTitle">New task</h2>
+    <input type="hidden" id="taskId">
+    <div class="field"><label>Task</label><input id="taskTitle" placeholder="e.g. Call Mike about the Oak Cliff offer"></div>
+    <div class="field-row">
+      <div class="field"><label>Date</label><input type="date" id="taskDate"></div>
+      <div class="field"><label>Time</label><input type="time" id="taskTime"></div>
+    </div>
+    <div class="field">
+      <label>Related buyer (optional)</label>
+      <select id="taskBuyer"><option value="">None</option></select>
+    </div>
+    <div class="field"><label>Notes</label><textarea id="taskNotes" rows="2"></textarea></div>
+    <div class="modal-actions">
+      <button class="btn ghost" onclick="closeTaskModal()">Cancel</button>
+      <button class="btn danger" id="taskDeleteBtn" style="display:none;" onclick="deleteTaskFromModal()">Delete</button>
+      <button class="btn brick" onclick="saveTask()">Save task</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- Floating Gemini widget -->
+<button id="geminiBubble" onclick="toggleGeminiPanel()" title="Ask Gemini">✦<span class="pulse" id="bubblePulse"></span></button>
+<div id="geminiPanel">
+  <div class="gp-head">
+    <div class="t">Ask <span>Gemini</span></div>
+    <button class="gp-close" onclick="toggleGeminiPanel()">✕</button>
+  </div>
+  <div id="aiKeyWarning"></div>
+  <div class="gp-log" id="aiLog"></div>
+  <div class="gp-input-row">
+    <textarea id="aiInput" placeholder="Ask, or tell it to add/update something..." onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();askGemini();}"></textarea>
+    <button class="btn brick sm" onclick="askGemini()">Send</button>
+  </div>
+</div>
+
+<script>
+/* =========================================================
+   STORAGE
+========================================================= */
+const store = {
+  buyers: JSON.parse(localStorage.getItem('crm_buyers')||'[]'),
+  tasks: JSON.parse(localStorage.getItem('crm_tasks')||'[]'),
+};
+function saveBuyers(){ localStorage.setItem('crm_buyers', JSON.stringify(store.buyers)); }
+function saveTasks(){ localStorage.setItem('crm_tasks', JSON.stringify(store.tasks)); }
+function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,7); }
+function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+/* =========================================================
+   NAV
+========================================================= */
+document.querySelectorAll('.nav-item').forEach(item=>{
+  item.addEventListener('click', ()=>{
+    document.querySelectorAll('.nav-item').forEach(i=>i.classList.remove('active'));
+    document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+    item.classList.add('active');
+    document.getElementById('page-'+item.dataset.page).classList.add('active');
+    if(item.dataset.page==='buyers') renderBuyers();
+    if(item.dataset.page==='tasks') renderTasks();
+    if(item.dataset.page==='dashboard') renderDashboard();
+    if(item.dataset.page==='offers') renderOffersTimeline();
+    if(item.dataset.page==='settings') loadSettingsUI();
+    closeBell();
+  });
+});
+
+/* =========================================================
+   TOAST
+========================================================= */
+function toast(msg){
+  const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 2200);
+}
+
+/* =========================================================
+   DATE HELPERS
+========================================================= */
+function fmtDate(d){ return d.toLocaleDateString('en-US',{weekday:'long', month:'long', day:'numeric'}); }
+document.getElementById('todayDate').textContent = fmtDate(new Date());
+function todayStr(){ const d=new Date(); return d.toISOString().slice(0,10); }
+function addDays(str,n){ const d=new Date(str+'T00:00:00'); d.setDate(d.getDate()+n); return d.toISOString().slice(0,10); }
+
+/* =========================================================
+   LIVE CITY LOOKUP (covers every city — all of Texas included)
+   Uses OpenStreetMap's free Nominatim search, no key needed.
+========================================================= */
+const cityCache = {};
+let cityDebounceTimer = null;
+function onCityFieldInput(inputEl, datalistId){
+  clearTimeout(cityDebounceTimer);
+  const q = inputEl.value.trim();
+  if(q.length < 2) return;
+  cityDebounceTimer = setTimeout(()=>fetchCitySuggestions(q, datalistId), 350);
+}
+async function fetchCitySuggestions(q, datalistId){
+  const key = q.toLowerCase();
+  if(cityCache[key]){ fillDatalist(datalistId, cityCache[key]); return; }
+  try{
+    const url = 'https://nominatim.openstreetmap.org/search?format=jsonv2&addressdetails=1&countrycodes=us&featureType=city&limit=8&q=' + encodeURIComponent(q + ', USA');
+    const res = await fetch(url, { headers: { 'Accept-Language':'en' } });
+    if(!res.ok) return;
+    const data = await res.json();
+    const names = [];
+    const seen = new Set();
+    data.forEach(item=>{
+      const a = item.address || {};
+      const cityName = a.city || a.town || a.village || a.hamlet || a.municipality || item.name;
+      const stateAbbr = STATE_ABBR[a.state] || a.state;
+      if(cityName && stateAbbr){
+        const label = cityName + ', ' + stateAbbr;
+        if(!seen.has(label)){ seen.add(label); names.push(label); }
+      }
+    });
+    cityCache[key] = names;
+    fillDatalist(datalistId, names);
+  }catch(e){ /* offline or blocked — datalist just stays as-is */ }
+}
+function fillDatalist(datalistId, names){
+  const dl = document.getElementById(datalistId);
+  dl.innerHTML = '';
+  names.forEach(n=>{ const o=document.createElement('option'); o.value=n; dl.appendChild(o); });
+}
+const STATE_ABBR = {"Alabama":"AL","Alaska":"AK","Arizona":"AZ","Arkansas":"AR","California":"CA","Colorado":"CO","Connecticut":"CT","Delaware":"DE","Florida":"FL","Georgia":"GA","Hawaii":"HI","Idaho":"ID","Illinois":"IL","Indiana":"IN","Iowa":"IA","Kansas":"KS","Kentucky":"KY","Louisiana":"LA","Maine":"ME","Maryland":"MD","Massachusetts":"MA","Michigan":"MI","Minnesota":"MN","Mississippi":"MS","Missouri":"MO","Montana":"MT","Nebraska":"NE","Nevada":"NV","New Hampshire":"NH","New Jersey":"NJ","New Mexico":"NM","New York":"NY","North Carolina":"NC","North Dakota":"ND","Ohio":"OH","Oklahoma":"OK","Oregon":"OR","Pennsylvania":"PA","Rhode Island":"RI","South Carolina":"SC","South Dakota":"SD","Tennessee":"TN","Texas":"TX","Utah":"UT","Vermont":"VT","Virginia":"VA","Washington":"WA","West Virginia":"WV","Wisconsin":"WI","Wyoming":"WY","District of Columbia":"DC"};
+
+/* Auto-fill city & state from the typed street address */
+let geoDebounceTimer = null;
+async function autofillFromAddress(){
+  const addr = document.getElementById('buyerAddress').value.trim();
+  const statusEl = document.getElementById('geoStatus');
+  if(!addr){ statusEl.textContent=''; return; }
+  statusEl.className = 'geo-status';
+  statusEl.textContent = 'Looking up city/state...';
+  try{
+    const url = 'https://nominatim.openstreetmap.org/search?format=jsonv2&addressdetails=1&countrycodes=us&limit=1&q=' + encodeURIComponent(addr);
+    const res = await fetch(url, { headers: { 'Accept-Language':'en' } });
+    const data = await res.json();
+    if(data && data.length){
+      const a = data[0].address || {};
+      const cityName = a.city || a.town || a.village || a.hamlet || a.municipality;
+      const stateAbbr = STATE_ABBR[a.state] || a.state;
+      if(cityName) document.getElementById('buyerCity').value = cityName;
+      if(stateAbbr) document.getElementById('buyerState').value = stateAbbr;
+      statusEl.textContent = (cityName||'city') + (stateAbbr? ', '+stateAbbr : '') + ' — filled in automatically.';
+    } else {
+      statusEl.className = 'geo-status err';
+      statusEl.textContent = "Couldn't match that address — type the city/state in yourself.";
+    }
+  }catch(e){
+    statusEl.className = 'geo-status err';
+    statusEl.textContent = "Lookup failed (offline?) — type the city/state in yourself.";
+  }
+}
+
+/* =========================================================
+   DASHBOARD
+========================================================= */
+function renderDashboard(){
+  document.getElementById('statBuyers').textContent = store.buyers.length;
+  document.getElementById('statHot').textContent = store.buyers.filter(b=>b.status==='hot').length;
+  const today = todayStr();
+  const dueToday = store.tasks.filter(t=>!t.done && t.dueDate===today);
+  document.getElementById('statTasksToday').textContent = dueToday.length;
+
+  const overdue = store.tasks.filter(t=>!t.done && t.dueDate && t.dueDate < today);
+  const relevant = [...overdue, ...dueToday].sort((a,b)=> (a.dueDate+(a.dueTime||'')).localeCompare(b.dueDate+(b.dueTime||'')));
+  const list = document.getElementById('dashTaskList');
+  list.innerHTML = relevant.length===0
+    ? '<div class="empty">Nothing due. Add a task to get reminded.</div>'
+    : relevant.slice(0,8).map(t=>taskRowHtml(t, overdue.includes(t))).join('');
+
+  const hot = store.buyers.filter(b=>b.status==='hot').sort((a,b)=>b.rating-a.rating);
+  const hotList = document.getElementById('dashHotList');
+  hotList.innerHTML = hot.length===0 ? '<div class="empty">No hot leads yet.</div>' : hot.slice(0,8).map(b=>`
+      <div class="buyer-row">
+        <div style="flex:1;">
+          <div class="buyer-name">${esc(b.name)}</div>
+          <div class="buyer-sub">${esc(b.city||'')}${b.state? ', '+esc(b.state):''} · rating ${b.rating}/10 · ${(b.offers||[]).length} offer${(b.offers||[]).length!==1?'s':''}</div>
+        </div>
+      </div>`).join('');
+
+  const banner = document.getElementById('dueBanner');
+  if(overdue.length>0){
+    banner.innerHTML = `<div class="banner brick"><span>${overdue.length} task${overdue.length!==1?'s are':' is'} overdue.</span><button onclick="document.querySelector('[data-page=tasks]').click()">View tasks</button></div>`;
+  } else if(dueToday.length>0){
+    banner.innerHTML = `<div class="banner"><span>${dueToday.length} task${dueToday.length!==1?'s':''} due today.</span><button onclick="document.querySelector('[data-page=tasks]').click()">View tasks</button></div>`;
+  } else banner.innerHTML='';
+
+  document.getElementById('taskDot').classList.toggle('show', overdue.length>0 || dueToday.length>0);
+  renderBell();
+  maybeShowNotifPrompt();
+}
+
+function taskRowHtml(t, isOverdue){
+  const buyer = store.buyers.find(b=>b.id===t.relatedBuyerId);
+  return `
+    <div class="task-row">
+      <div class="task-check ${t.done?'done':''}" onclick="toggleTask('${t.id}')"></div>
+      <div class="task-body" style="cursor:pointer;" onclick="openTaskModal('${t.id}')">
+        <div class="task-title ${t.done?'done':''}">${esc(t.title)}</div>
+        <div class="task-meta">
+          ${t.dueDate?esc(t.dueDate):''} ${t.dueTime?esc(t.dueTime):''}
+          ${buyer? ' · '+esc(buyer.name):''}
+          ${isOverdue? ' · <span class="badge overdue">Overdue</span>' : (t.dueDate===todayStr()? ' · <span class="badge today">Today</span>':'')}
+        </div>
+      </div>
+    </div>`;
+}
+
+/* =========================================================
+   BELL
+========================================================= */
+function renderBell(){
+  const today = todayStr();
+  const due = store.tasks.filter(t=>!t.done && t.dueDate && t.dueDate<=today);
+  const countEl = document.getElementById('bellCount');
+  if(due.length>0){ countEl.style.display='flex'; countEl.textContent=due.length; } else countEl.style.display='none';
+  document.getElementById('bellList').innerHTML = due.length===0
+    ? '<div class="empty">You\'re all caught up.</div>'
+    : due.sort((a,b)=>(a.dueDate+(a.dueTime||'')).localeCompare(b.dueDate+(b.dueTime||''))).map(t=>taskRowHtml(t, t.dueDate<today)).join('');
+}
+function toggleBell(){ document.getElementById('bellDrop').classList.toggle('show'); }
+function closeBell(){ document.getElementById('bellDrop').classList.remove('show'); }
+document.addEventListener('click', e=>{
+  if(!e.target.closest('.bell-wrap')) closeBell();
+});
+
+function maybeShowNotifPrompt(){
+  const el = document.getElementById('notifPromptBanner');
+  if(!el) return;
+  if('Notification' in window && Notification.permission==='default' && !localStorage.getItem('notif_prompt_dismissed')){
+    el.innerHTML = `<div class="banner"><span>Turn on desktop notifications so tasks ping you the moment they're due.</span>
+      <span><button onclick="requestNotifPermission()">Enable</button> <button onclick="dismissNotifPrompt()" style="margin-left:6px;">Dismiss</button></span></div>`;
+  } else el.innerHTML='';
+}
+function dismissNotifPrompt(){ localStorage.setItem('notif_prompt_dismissed','1'); maybeShowNotifPrompt(); }
+function requestNotifPermission(){
+  if(!('Notification' in window)){ toast('Notifications are not supported in this browser.'); return; }
+  Notification.requestPermission().then(p=>{
+    updateNotifBtn();
+    if(p==='granted') toast('Notifications enabled.');
+    maybeShowNotifPrompt();
+  });
+}
+function updateNotifBtn(){
+  const btn = document.getElementById('notifBtn');
+  if(!btn) return;
+  if(!('Notification' in window)){ btn.textContent='Not supported'; btn.disabled=true; return; }
+  if(Notification.permission==='granted'){ btn.textContent='Notifications enabled ✓'; }
+  else if(Notification.permission==='denied'){ btn.textContent='Blocked in browser settings'; }
+  else btn.textContent='Enable notifications';
+}
+
+/* Check every 30s for newly-due tasks and fire a real notification once each */
+const notifiedIds = new Set(JSON.parse(sessionStorage.getItem('notified_ids')||'[]'));
+function checkDueNotifications(){
+  if(!('Notification' in window) || Notification.permission!=='granted') return;
+  const now = new Date();
+  store.tasks.forEach(t=>{
+    if(t.done || !t.dueDate) return;
+    const due = new Date(t.dueDate + 'T' + (t.dueTime||'00:00'));
+    if(due <= now && !notifiedIds.has(t.id)){
+      notifiedIds.add(t.id);
+      sessionStorage.setItem('notified_ids', JSON.stringify([...notifiedIds]));
+      try{ new Notification('Dealbook reminder', { body: t.title }); }catch(e){}
+    }
+  });
+}
+setInterval(()=>{ checkDueNotifications(); renderBell(); if(document.getElementById('page-dashboard').classList.contains('active')) renderDashboard(); }, 30000);
+
+/* =========================================================
+   BUYERS
+========================================================= */
+let editingFavs = [];
+let editingOffers = [];
+
+function openBuyerModal(id){
+  document.getElementById('buyerModalTitle').textContent = id ? 'Edit buyer' : 'Add buyer';
+  document.getElementById('buyerId').value = id || '';
+  document.getElementById('buyerDeleteBtn').style.display = id ? 'inline-flex' : 'none';
+  const b = id ? store.buyers.find(x=>x.id===id) : null;
+  document.getElementById('buyerName').value = b?.name || '';
+  document.getElementById('buyerPhone').value = b?.phone || '';
+  document.getElementById('buyerAddress').value = b?.address || '';
+  document.getElementById('buyerCity').value = b?.city || '';
+  document.getElementById('buyerState').value = b?.state || '';
+  document.getElementById('buyerStatus').value = b?.status || 'warm';
+  document.getElementById('buyerRating').value = b?.rating || 7;
+  document.getElementById('ratingNum').textContent = b?.rating || 7;
+  document.getElementById('buyerSawShowing').checked = !!b?.sawShowing;
+  document.getElementById('buyerMadeOffer').checked = !!b?.madeOffer;
+  document.getElementById('buyerNotes').value = b?.notes || '';
+  document.getElementById('geoStatus').textContent = '';
+  editingFavs = b?.favorites ? [...b.favorites] : [];
+  editingOffers = b?.offers ? JSON.parse(JSON.stringify(b.offers)) : [];
+  renderFavChips();
+  renderOfferListEdit();
+  document.getElementById('offerLocation').value='';
+  document.getElementById('offerAmount').value='';
+  document.getElementById('offerDate').value='';
+  document.getElementById('offerNotes').value='';
+  document.getElementById('buyerModalBg').classList.add('show');
+}
+function closeBuyerModal(){ document.getElementById('buyerModalBg').classList.remove('show'); }
+
+function addFavChip(){
+  const inp = document.getElementById('favInput');
+  const v = inp.value.trim();
+  if(v && !editingFavs.includes(v)) editingFavs.push(v);
+  inp.value='';
+  renderFavChips();
+}
+function removeFavChip(i){ editingFavs.splice(i,1); renderFavChips(); }
+function renderFavChips(){
+  document.getElementById('favChipList').innerHTML = editingFavs.map((f,i)=>
+    `<span class="chip">${esc(f)}<button onclick="removeFavChip(${i})">✕</button></span>`).join('');
+}
+
+function addOfferToEdit(){
+  const loc = document.getElementById('offerLocation').value.trim();
+  const amt = document.getElementById('offerAmount').value.trim();
+  const date = document.getElementById('offerDate').value;
+  const notes = document.getElementById('offerNotes').value.trim();
+  if(!loc && !amt){ toast('Add a location or amount for the offer.'); return; }
+  editingOffers.push({ id: uid(), location: loc, amount: amt, date, notes });
+  document.getElementById('offerLocation').value='';
+  document.getElementById('offerAmount').value='';
+  document.getElementById('offerDate').value='';
+  document.getElementById('offerNotes').value='';
+  renderOfferListEdit();
+}
+function removeOfferFromEdit(i){ editingOffers.splice(i,1); renderOfferListEdit(); }
+function renderOfferListEdit(){
+  document.getElementById('offerListEdit').innerHTML = editingOffers.length===0
+    ? '<div class="field-note">No offers logged yet.</div>'
+    : editingOffers.map((o,i)=>`
+      <div class="offer-item">
+        <div>
+          <div class="oline1">${esc(o.location||'—')} ${o.amount? '· '+esc(o.amount):''}</div>
+          <div class="onotes">${o.date? esc(o.date)+' — ':''}${esc(o.notes||'')}</div>
+        </div>
+        <button onclick="removeOfferFromEdit(${i})">✕</button>
+      </div>`).join('');
+}
+
+function saveBuyer(){
+  const name = document.getElementById('buyerName').value.trim();
+  if(!name){ toast('This buyer needs a name.'); return; }
+  const id = document.getElementById('buyerId').value || uid();
+  const buyer = {
+    id,
+    name,
+    phone: document.getElementById('buyerPhone').value.trim(),
+    address: document.getElementById('buyerAddress').value.trim(),
+    city: document.getElementById('buyerCity').value.trim(),
+    state: document.getElementById('buyerState').value.trim().toUpperCase(),
+    status: document.getElementById('buyerStatus').value,
+    rating: parseInt(document.getElementById('buyerRating').value,10),
+    sawShowing: document.getElementById('buyerSawShowing').checked,
+    madeOffer: document.getElementById('buyerMadeOffer').checked,
+    favorites: [...editingFavs],
+    notes: document.getElementById('buyerNotes').value.trim(),
+    offers: [...editingOffers],
+  };
+  const idx = store.buyers.findIndex(b=>b.id===id);
+  if(idx>-1) store.buyers[idx] = buyer; else store.buyers.push(buyer);
+  saveBuyers();
+  closeBuyerModal();
+  toast('Buyer saved.');
+  renderBuyers(); renderDashboard();
+}
+function deleteBuyerFromModal(){
+  const id = document.getElementById('buyerId').value;
+  if(!id) return;
+  if(!confirm('Delete this buyer?')) return;
+  store.buyers = store.buyers.filter(b=>b.id!==id);
+  saveBuyers();
+  closeBuyerModal();
+  toast('Buyer deleted.');
+  renderBuyers(); renderDashboard();
+}
+function toggleBuyerFlag(id, field){
+  const b = store.buyers.find(x=>x.id===id);
+  if(!b) return;
+  b[field] = !b[field];
+  saveBuyers();
+  renderBuyers();
+}
+
+function renderBuyers(){
+  const q = (document.getElementById('buyerSearch')?.value || '').toLowerCase();
+  const list = store.buyers.filter(b=>{
+    if(!q) return true;
+    return [b.name,b.city,b.state,b.address,b.notes].some(v=>(v||'').toLowerCase().includes(q));
+  }).sort((a,b)=>b.rating-a.rating);
+  const el = document.getElementById('buyerList');
+  el.innerHTML = list.length===0 ? '<div class="empty">No buyers yet. Add your first one.</div>' : list.map(b=>`
+    <div class="buyer-row">
+      <div style="flex:1; cursor:pointer;" onclick="openBuyerModal('${b.id}')">
+        <div class="buyer-name">${esc(b.name)} <span class="badge ${esc(b.status)}">${esc(b.status)}</span></div>
+        <div class="buyer-sub">
+          ${b.address? esc(b.address)+' · ':''}${esc(b.city||'')}${b.state? ', '+esc(b.state):''}
+          ${b.phone? ' · '+esc(b.phone):''} · rating ${b.rating}/10 · ${(b.offers||[]).length} offer${(b.offers||[]).length!==1?'s':''}
+        </div>
+        ${b.favorites && b.favorites.length ? `<div class="chip-list">${b.favorites.map(f=>`<span class="chip">${esc(f)}</span>`).join('')}</div>` : ''}
+      </div>
+      <div class="buyer-flags" onclick="event.stopPropagation()">
+        <label><input type="checkbox" ${b.sawShowing?'checked':''} onchange="toggleBuyerFlag('${b.id}','sawShowing')"> Saw showing</label>
+        <label><input type="checkbox" ${b.madeOffer?'checked':''} onchange="toggleBuyerFlag('${b.id}','madeOffer')"> Made offer</label>
+      </div>
+      <div class="buyer-actions">
+        <button class="btn ghost sm" onclick="openBuyerModal('${b.id}')">Edit</button>
+      </div>
+    </div>`).join('');
+}
+
+/* =========================================================
+   TASKS
+========================================================= */
+function populateTaskBuyerSelect(){
+  const sel = document.getElementById('taskBuyer');
+  const current = sel.value;
+  sel.innerHTML = '<option value="">None</option>' + store.buyers.map(b=>`<option value="${b.id}">${esc(b.name)}</option>`).join('');
+  sel.value = current;
+}
+function openTaskModal(id){
+  populateTaskBuyerSelect();
+  document.getElementById('taskModalTitle').textContent = id ? 'Edit task' : 'New task';
+  document.getElementById('taskId').value = id || '';
+  document.getElementById('taskDeleteBtn').style.display = id ? 'inline-flex' : 'none';
+  const t = id ? store.tasks.find(x=>x.id===id) : null;
+  document.getElementById('taskTitle').value = t?.title || '';
+  document.getElementById('taskDate').value = t?.dueDate || todayStr();
+  document.getElementById('taskTime').value = t?.dueTime || '';
+  document.getElementById('taskBuyer').value = t?.relatedBuyerId || '';
+  document.getElementById('taskNotes').value = t?.notes || '';
+  document.getElementById('taskModalBg').classList.add('show');
+}
+function closeTaskModal(){ document.getElementById('taskModalBg').classList.remove('show'); }
+function saveTask(){
+  const title = document.getElementById('taskTitle').value.trim();
+  if(!title){ toast('This task needs a title.'); return; }
+  const id = document.getElementById('taskId').value || uid();
+  const existing = store.tasks.find(t=>t.id===id);
+  const task = {
+    id,
+    title,
+    dueDate: document.getElementById('taskDate').value,
+    dueTime: document.getElementById('taskTime').value,
+    relatedBuyerId: document.getElementById('taskBuyer').value,
+    notes: document.getElementById('taskNotes').value.trim(),
+    done: existing?.done || false,
+  };
+  const idx = store.tasks.findIndex(t=>t.id===id);
+  if(idx>-1) store.tasks[idx]=task; else store.tasks.push(task);
+  saveTasks();
+  closeTaskModal();
+  toast('Task saved.');
+  renderTasks(); renderDashboard();
+}
+function deleteTaskFromModal(){
+  const id = document.getElementById('taskId').value;
+  if(!id) return;
+  store.tasks = store.tasks.filter(t=>t.id!==id);
+  saveTasks();
+  closeTaskModal();
+  toast('Task deleted.');
+  renderTasks(); renderDashboard();
+}
+function toggleTask(id){
+  const t = store.tasks.find(x=>x.id===id);
+  if(!t) return;
+  t.done = !t.done;
+  saveTasks();
+  renderTasks(); renderDashboard();
+}
+function renderTasks(){
+  const today = todayStr();
+  const sorted = [...store.tasks].sort((a,b)=>{
+    if(a.done!==b.done) return a.done? 1 : -1;
+    return (a.dueDate+(a.dueTime||'')).localeCompare(b.dueDate+(b.dueTime||''));
+  });
+  const el = document.getElementById('taskList');
+  el.innerHTML = sorted.length===0 ? '<div class="empty">No tasks yet.</div>' : sorted.map(t=>taskRowHtml(t, !t.done && t.dueDate && t.dueDate<today)).join('');
+}
+
+/* =========================================================
+   OFFERS TIMELINE
+========================================================= */
+function renderOffersTimeline(){
+  const today = todayStr();
+  const tomorrow = addDays(today,1);
+  const all = [];
+  store.buyers.forEach(b=>(b.offers||[]).forEach(o=>all.push({...o, buyerName:b.name, buyerId:b.id})));
+  all.sort((a,b)=> (b.date||'').localeCompare(a.date||''));
+  const groups = { today:[], tomorrow:[], upcoming:[], past:[], undated:[] };
+  all.forEach(o=>{
+    if(!o.date) groups.undated.push(o);
+    else if(o.date===today) groups.today.push(o);
+    else if(o.date===tomorrow) groups.tomorrow.push(o);
+    else if(o.date>today) groups.upcoming.push(o);
+    else groups.past.push(o);
+  });
+  function groupHtml(title, items){
+    if(items.length===0) return '';
+    return `<div class="offer-group"><h3>${title} <span class="cnt">${items.length}</span></h3><div class="card">
+      ${items.map(o=>`
+        <div class="offer-item" style="cursor:pointer;" onclick="openBuyerModal('${o.buyerId}')">
+          <div>
+            <div class="oline1">${esc(o.buyerName)} — ${esc(o.location||'—')} ${o.amount? '· '+esc(o.amount):''}</div>
+            <div class="onotes">${o.date? esc(o.date)+' — ':''}${esc(o.notes||'')}</div>
+          </div>
+        </div>`).join('')}
+    </div></div>`;
+  }
+  const html = groupHtml('Today', groups.today) + groupHtml('Tomorrow', groups.tomorrow) + groupHtml('Upcoming', groups.upcoming) + groupHtml('Undated', groups.undated) + groupHtml('Past', groups.past);
+  document.getElementById('offersTimeline').innerHTML = html || '<div class="card empty">No offers logged yet. Add one from a buyer\'s profile.</div>';
+}
+
+/* =========================================================
+   BY CITY
+========================================================= */
+function renderCityResults(){
+  const q = (document.getElementById('citySearch').value||'').trim().toLowerCase();
+  const el = document.getElementById('cityResults');
+  if(!q){ el.innerHTML = '<div class="empty">Type a city to search.</div>'; return; }
+  const cityOnly = q.split(',')[0].trim();
+  const matches = store.buyers.filter(b=>{
+    const inBuyerCity = (b.city||'').toLowerCase().includes(cityOnly);
+    const inFavorites = (b.favorites||[]).some(f=>f.toLowerCase().includes(cityOnly));
+    const inOffers = (b.offers||[]).some(o=>(o.location||'').toLowerCase().includes(cityOnly));
+    return inBuyerCity || inFavorites || inOffers;
+  });
+  if(matches.length===0){ el.innerHTML = `<div class="empty">No buyers linked to "${esc(document.getElementById('citySearch').value)}" yet.</div>`; return; }
+  el.innerHTML = `<div class="city-heading">${esc(document.getElementById('citySearch').value)} <span class="city-count">${matches.length} buyer${matches.length!==1?'s':''}</span></div>` +
+    matches.map(b=>`
+    <div class="buyer-row" style="cursor:pointer;" onclick="openBuyerModal('${b.id}')">
+      <div style="flex:1;">
+        <div class="buyer-name">${esc(b.name)} <span class="badge ${esc(b.status)}">${esc(b.status)}</span></div>
+        <div class="buyer-sub">${esc(b.city||'')}${b.state? ', '+esc(b.state):''} · rating ${b.rating}/10</div>
+        ${b.favorites && b.favorites.length ? `<div class="chip-list">${b.favorites.map(f=>`<span class="chip">${esc(f)}</span>`).join('')}</div>` : ''}
+      </div>
+    </div>`).join('');
+}
+
+/* =========================================================
+   SETTINGS / GEMINI KEY
+========================================================= */
+function loadSettingsUI(){
+  const key = localStorage.getItem('gemini_api_key') || '';
+  document.getElementById('geminiKeyInput').value = key;
+  updateNotifBtn();
+}
+function saveGeminiKey(){
+  const key = document.getElementById('geminiKeyInput').value.trim();
+  localStorage.setItem('gemini_api_key', key);
+  const note = document.getElementById('keySavedNote');
+  note.textContent = key ? 'Saved.' : 'Key cleared.';
+  setTimeout(()=>note.textContent='', 2500);
+  renderKeyWarning();
+}
+async function testGeminiKey(){
+  const note = document.getElementById('keySavedNote');
+  note.style.color = 'var(--teal)';
+  note.textContent = 'Testing...';
+  try{
+    await callGeminiRaw('Reply with just the word OK.');
+    note.textContent = 'Connected — Gemini responded.';
+  }catch(e){
+    note.style.color = 'var(--brick-dark)';
+    note.textContent = 'Failed: ' + e.message;
+  }
+  setTimeout(()=>{note.textContent=''; note.style.color='var(--teal)';}, 4000);
+}
+
+/* =========================================================
+   GEMINI ASSISTANT
+   Reads/writes buyers, offers and tasks when asked.
+========================================================= */
+const GEMINI_MODEL = 'gemini-2.5-flash';
+let aiHistory = []; // {role:'user'|'model', text:'...'}
+
+function renderKeyWarning(){
+  const el = document.getElementById('aiKeyWarning');
+  const key = localStorage.getItem('gemini_api_key');
+  el.innerHTML = key ? '' : `<div class="gp-keywarning">No Gemini API key yet — add one on the Settings page to use the assistant.</div>`;
+}
+
+function toggleGeminiPanel(){
+  const panel = document.getElementById('geminiPanel');
+  panel.classList.toggle('show');
+  if(panel.classList.contains('show')){
+    renderKeyWarning();
+    document.getElementById('bubblePulse').classList.remove('show');
+    if(aiHistory.length===0){
+      appendAiMsg('sys', "Try: \"Add a hot buyer named Sarah Kim in Odessa, TX who saw the showing\" or \"What tasks are overdue?\"");
+    }
+    document.getElementById('aiInput').focus();
+  }
+}
+function appendAiMsg(kind, text){
+  const log = document.getElementById('aiLog');
+  const div = document.createElement('div');
+  div.className = 'ai-msg ' + kind;
+  div.textContent = text;
+  log.appendChild(div);
+  log.scrollTop = log.scrollHeight;
+}
+
+function buildSystemInstruction(){
+  const buyersSummary = store.buyers.map(b=>({
+    id:b.id, name:b.name, city:b.city, state:b.state, status:b.status, rating:b.rating,
+    sawShowing:!!b.sawShowing, madeOffer:!!b.madeOffer, favorites:b.favorites||[],
+    offers:(b.offers||[]).map(o=>({id:o.id, location:o.location, amount:o.amount, date:o.date, notes:o.notes})),
+    notes:b.notes||''
+  }));
+  const tasksSummary = store.tasks.map(t=>({id:t.id, title:t.title, dueDate:t.dueDate, dueTime:t.dueTime, relatedBuyerId:t.relatedBuyerId, done:!!t.done, notes:t.notes||''}));
+  return `You are the built-in assistant inside "Dealbook", a real-estate buyer CRM. Today's date is ${todayStr()}.
+Current buyers (JSON): ${JSON.stringify(buyersSummary)}
+Current tasks (JSON): ${JSON.stringify(tasksSummary)}
+
+You can answer questions about this data directly in plain text.
+When the user asks you to ADD, EDIT, or DELETE a buyer, offer, or task, do it by ending your reply with a fenced JSON code block (\`\`\`json ... \`\`\`) containing an "actions" array. Supported action objects:
+- {"type":"add_buyer","name":"...","phone":"","address":"","city":"","state":"","status":"warm|hot|cold","rating":7,"sawShowing":false,"madeOffer":false,"favorites":[],"notes":""}
+- {"type":"update_buyer","buyer":"<id or name>","fields":{...any buyer fields to change...}}
+- {"type":"delete_buyer","buyer":"<id or name>"}
+- {"type":"add_offer","buyer":"<id or name>","location":"","amount":"","date":"YYYY-MM-DD","notes":""}
+- {"type":"add_task","title":"...","dueDate":"YYYY-MM-DD","dueTime":"HH:MM","relatedBuyer":"<id or name, optional>","notes":""}
+- {"type":"update_task","task":"<id or title>","fields":{...}}
+- {"type":"delete_task","task":"<id or title>"}
+- {"type":"complete_task","task":"<id or title>"}
+Always write a short, friendly plain-text sentence BEFORE the JSON block describing what you're doing. If the user is only asking a question, answer in plain text with no JSON block at all. Never wrap your whole reply in JSON — only the actions block.`;
+}
+
+async function callGeminiRaw(userText){
+  const key = localStorage.getItem('gemini_api_key');
+  if(!key) throw new Error('No API key saved yet — add one in Settings.');
+  const contents = [
+    ...aiHistory.map(m=>({role: m.role, parts:[{text:m.text}]})),
+    { role:'user', parts:[{text:userText}] }
+  ];
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`;
+  const res = await fetch(url, {
+    method:'POST',
+    headers:{ 'Content-Type':'application/json', 'x-goog-api-key': key },
+    body: JSON.stringify({
+      system_instruction: { parts:[{text: buildSystemInstruction()}] },
+      contents,
+      generationConfig: { temperature: 0.4 }
+    })
+  });
+  const data = await res.json();
+  if(!res.ok){
+    const msg = data?.error?.message || ('HTTP '+res.status);
+    throw new Error(msg);
+  }
+  const text = data?.candidates?.[0]?.content?.parts?.map(p=>p.text||'').join('') || '';
+  if(!text) throw new Error('Gemini returned an empty response.');
+  return text;
+}
+
+function findBuyerRef(ref){
+  if(!ref) return null;
+  let b = store.buyers.find(x=>x.id===ref);
+  if(b) return b;
+  const low = String(ref).toLowerCase();
+  return store.buyers.find(x=>x.name.toLowerCase()===low) ||
+         store.buyers.find(x=>x.name.toLowerCase().includes(low));
+}
+function findTaskRef(ref){
+  if(!ref) return null;
+  let t = store.tasks.find(x=>x.id===ref);
+  if(t) return t;
+  const low = String(ref).toLowerCase();
+  return store.tasks.find(x=>x.title.toLowerCase()===low) ||
+         store.tasks.find(x=>x.title.toLowerCase().includes(low));
+}
+
+function applyAiActions(actions){
+  let changedBuyers=false, changedTasks=false;
+  const results = [];
+  actions.forEach(a=>{
+    try{
+      switch(a.type){
+        case 'add_buyer': {
+          const b = { id: uid(), name:a.name||'Unnamed', phone:a.phone||'', address:a.address||'',
+            city:a.city||'', state:(a.state||'').toUpperCase(), status:a.status||'warm',
+            rating: a.rating!=null? parseInt(a.rating,10):7, sawShowing: !!a.sawShowing, madeOffer: !!a.madeOffer,
+            favorites: a.favorites||[], notes: a.notes||'', offers: [] };
+          store.buyers.push(b); changedBuyers=true;
+          results.push('Added buyer '+b.name+'.');
+          break;
+        }
+        case 'update_buyer': {
+          const b = findBuyerRef(a.buyer);
+          if(!b){ results.push('Could not find buyer "'+a.buyer+'".'); break; }
+          Object.assign(b, a.fields||{});
+          if(a.fields && a.fields.state) b.state = String(a.fields.state).toUpperCase();
+          changedBuyers=true;
+          results.push('Updated '+b.name+'.');
+          break;
+        }
+        case 'delete_buyer': {
+          const b = findBuyerRef(a.buyer);
+          if(!b){ results.push('Could not find buyer "'+a.buyer+'".'); break; }
+          store.buyers = store.buyers.filter(x=>x.id!==b.id);
+          changedBuyers=true;
+          results.push('Deleted '+b.name+'.');
+          break;
+        }
+        case 'add_offer': {
+          const b = findBuyerRef(a.buyer);
+          if(!b){ results.push('Could not find buyer "'+a.buyer+'".'); break; }
+          b.offers = b.offers||[];
+          b.offers.push({ id: uid(), location:a.location||'', amount:a.amount||'', date:a.date||'', notes:a.notes||'' });
+          b.madeOffer = true;
+          changedBuyers=true;
+          results.push('Logged an offer for '+b.name+'.');
+          break;
+        }
+        case 'add_task': {
+          const buyer = a.relatedBuyer ? findBuyerRef(a.relatedBuyer) : null;
+          const t = { id: uid(), title:a.title||'Untitled task', dueDate:a.dueDate||todayStr(), dueTime:a.dueTime||'',
+            relatedBuyerId: buyer? buyer.id : '', notes:a.notes||'', done:false };
+          store.tasks.push(t); changedTasks=true;
+          results.push('Added task "'+t.title+'".');
+          break;
+        }
+        case 'update_task': {
+          const t = findTaskRef(a.task);
+          if(!t){ results.push('Could not find task "'+a.task+'".'); break; }
+          Object.assign(t, a.fields||{});
+          changedTasks=true;
+          results.push('Updated task "'+t.title+'".');
+          break;
+        }
+        case 'delete_task': {
+          const t = findTaskRef(a.task);
+          if(!t){ results.push('Could not find task "'+a.task+'".'); break; }
+          store.tasks = store.tasks.filter(x=>x.id!==t.id);
+          changedTasks=true;
+          results.push('Deleted task "'+t.title+'".');
+          break;
+        }
+        case 'complete_task': {
+          const t = findTaskRef(a.task);
+          if(!t){ results.push('Could not find task "'+a.task+'".'); break; }
+          t.done = true;
+          changedTasks=true;
+          results.push('Marked "'+t.title+'" as done.');
+          break;
+        }
+        default:
+          results.push('Unknown action: '+a.type);
+      }
+    }catch(e){ results.push('Action failed: '+e.message); }
+  });
+  if(changedBuyers) saveBuyers();
+  if(changedTasks) saveTasks();
+  if(changedBuyers || changedTasks){ renderBuyers(); renderTasks(); renderDashboard(); renderOffersTimeline(); }
+  return results;
+}
+
+async function askGemini(){
+  const input = document.getElementById('aiInput');
+  const text = input.value.trim();
+  if(!text) return;
+  input.value='';
+  appendAiMsg('user', text);
+  aiHistory.push({role:'user', text});
+  const key = localStorage.getItem('gemini_api_key');
+  if(!key){
+    appendAiMsg('err', 'Add a Gemini API key on the Settings page first.');
+    renderKeyWarning();
+    return;
+  }
+  appendAiMsg('sys', 'Thinking...');
+  const log = document.getElementById('aiLog');
+  try{
+    const reply = await callGeminiRaw(text);
+    log.lastChild.remove();
+    let plain = reply;
+    let actions = null;
+    const match = reply.match(/```json\s*([\s\S]*?)```/i);
+    if(match){
+      plain = reply.slice(0, match.index).trim();
+      try{
+        const parsed = JSON.parse(match[1]);
+        actions = parsed.actions || (Array.isArray(parsed)? parsed : null);
+      }catch(e){ /* ignore malformed json, just show text */ }
+    }
+    if(plain) appendAiMsg('ai', plain);
+    aiHistory.push({role:'model', text: reply});
+    if(actions && actions.length){
+      const results = applyAiActions(actions);
+      appendAiMsg('sys', results.join(' '));
+    }
+    if(!plain && (!actions || !actions.length)) appendAiMsg('ai', reply);
+  }catch(e){
+    log.lastChild.remove();
+    appendAiMsg('err', 'Gemini error: ' + e.message);
+  }
+}
+
+/* =========================================================
+   INIT
+========================================================= */
+renderDashboard();
+renderBuyers();
+renderTasks();
+updateNotifBtn();
+checkDueNotifications();
+</script>
+</body>
+</html>
