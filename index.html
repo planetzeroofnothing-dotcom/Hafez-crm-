@@ -831,7 +831,7 @@ function checkAiKey(){
   }
 }
 async function askGemini(){
-  const key = localStorage.getItem('geminiKey');
+  let key = localStorage.getItem('geminiKey') || document.getElementById('geminiKeyInput')?.value?.trim();
   const input = document.getElementById('aiInput');
   const log = document.getElementById('aiLog');
   const q = input.value.trim();
@@ -856,10 +856,14 @@ async function askGemini(){
       })
     });
     const data = await res.json();
-    const text = data.candidates?.[0]?.content?.parts?.[0]?.text || 'no response';
-    log.innerHTML += '<div class="ai-msg ai">'+esc(text)+'</div>';
+    if(data.error){
+      log.innerHTML += '<div class="ai-msg err">api error: '+esc(data.error.message)+'</div>';
+    } else {
+      const text = data.candidates?.[0]?.content?.parts?.[0]?.text || 'no response';
+      log.innerHTML += '<div class="ai-msg ai">'+esc(text)+'</div>';
+    }
   } catch(e) {
-    log.innerHTML += '<div class="ai-msg err">error calling gemini api</div>';
+    log.innerHTML += '<div class="ai-msg err">network error calling gemini api</div>';
   }
   log.scrollTop = log.scrollHeight;
 }
@@ -869,6 +873,7 @@ function saveGeminiKey(){
     localStorage.setItem('geminiKey', k);
     document.getElementById('keySavedNote').textContent = 'saved';
     setTimeout(()=>document.getElementById('keySavedNote').textContent='', 2000);
+    checkAiKey();
   }
 }
 async function testGeminiKey(){
@@ -880,14 +885,19 @@ async function testGeminiKey(){
       headers: {'Content-Type': 'application/json'},
       body: JSON.stringify({ contents: [{ parts: [{ text: 'hello' }] }] })
     });
-    if(res.ok) alert('connection successful');
-    else alert('connection failed check your key');
+    const data = await res.json();
+    if(res.ok && !data.error) alert('connection successful');
+    else alert('connection failed: ' + (data.error?.message || 'check your key'));
   } catch(e) { alert('error testing key'); }
 }
 function loadSettingsUI(){
   const k = localStorage.getItem('geminiKey');
-  if(k) document.getElementById('geminiKeyInput').value = k;
+  if(k) {
+    document.getElementById('geminiKeyInput').value = k;
+  }
+  checkAiKey();
 }
+loadSettingsUI();
 </script>
 </body>
 </html>
