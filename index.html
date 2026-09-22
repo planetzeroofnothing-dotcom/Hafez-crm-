@@ -468,7 +468,24 @@
     <button class="btn brick sm" onclick="askGemini()">Send</button>
   </div>
 </div>
-
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+  import { getFirestore, collection, getDocs, setDoc, doc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+  const firebaseConfig = {
+    apiKey: "ضع مفتاح الـ API هنا",
+    authDomain: "hafez-3c500.firebaseapp.com",
+    projectId: "hafez-3c500",
+    storageBucket: "hafez-3c500.firebasestorage.app",
+    messagingSenderId: "id",
+    appId: "app-id"
+  };
+  const app = initializeApp(firebaseConfig);
+  window.db = getFirestore(app);
+  window.FirestoreModules = { collection, getDocs, setDoc, doc, deleteDoc };
+  if (typeof loadDataFromFirebase === 'function') {
+    loadDataFromFirebase();
+  }
+</script>
 <script>
 /* =========================================================
    STORAGE & DATA
