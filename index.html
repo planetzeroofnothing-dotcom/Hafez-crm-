@@ -1246,5 +1246,22 @@ renderTasks();
 updateNotifBtn();
 checkDueNotifications();
 </script>
+  <script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+import { getFirestore, collection, getDocs, addDoc, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+const firebaseConfig = {
+apiKey: "AIzaSyCLV2_E06813b3BG4FNqWmY0O6PEwXlpXQ",
+authDomain: "hafez-3c500.firebaseapp.com",
+projectId: "hafez-3c500",
+storageBucket: "hafez-3c500.firebasestorage.app",
+messagingSenderId: "375224887521",
+appId: "1:375224887521:web:3edc85221096d697dc2fa0",
+measurementId: "G-9NENKC5HQ5"
+};
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+window.db = db;
+window.FirestoreModules = { collection, getDocs, addDoc, deleteDoc, doc };
+</script>
 </body>
 </html>
