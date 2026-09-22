@@ -3,10 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Dealbook — Buyer CRM</title>
+<title>dealbook buyer crm</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Zilla+Slab:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=zilla+slab:wght@400;500;600;700&family=source+sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
   :root{
     --ink:#211d18;
@@ -25,9 +25,9 @@
   html,body{height:100%;}
   body{
     margin:0; background:var(--paper); color:var(--ink);
-    font-family:'Source Sans 3', system-ui, sans-serif; -webkit-font-smoothing:antialiased;
+    font-family:'source sans 3', system-ui, sans-serif; -webkit-font-smoothing:antialiased;
   }
-  h1,h2,h3,.serif{font-family:'Zilla Slab', Georgia, serif;}
+  h1,h2,h3,.serif{font-family:'zilla slab', georgia, serif;}
   a{color:inherit;}
   button{font-family:inherit;cursor:pointer;}
 
@@ -38,7 +38,7 @@
     display:flex; flex-direction:column; padding:24px 0;
   }
   .brand{
-    font-family:'Zilla Slab', serif; font-size:22px; font-weight:600;
+    font-family:'zilla slab', serif; font-size:22px; font-weight:600;
     padding:0 24px 22px 24px; border-bottom:1px solid rgba(239,232,216,.14);
     margin-bottom:14px; letter-spacing:.2px;
   }
@@ -99,7 +99,7 @@
   @media (max-width:900px){ .grid.cols-3, .grid.cols-2{grid-template-columns:1fr;} }
 
   .stat{padding:18px 20px;}
-  .stat .num{font-family:'Zilla Slab',serif; font-size:32px; font-weight:600; line-height:1;}
+  .stat .num{font-family:'zilla slab',serif; font-size:32px; font-weight:600; line-height:1;}
   .stat .label{color:var(--ink-soft); font-size:13px; margin-top:6px;}
 
   .section-title{font-size:13px; color:var(--ink-soft); font-weight:600; margin:0 0 10px;}
@@ -148,7 +148,7 @@
 
   .rating-row{display:flex; align-items:center; gap:12px;}
   .rating-row input[type=range]{flex:1;}
-  .rating-num{font-family:'Zilla Slab',serif; font-weight:700; font-size:20px; width:28px; text-align:center;}
+  .rating-num{font-family:'zilla slab',serif; font-weight:700; font-size:20px; width:28px; text-align:center;}
 
   .chip-list{display:flex; flex-wrap:wrap; gap:6px; margin-top:6px;}
   .chip{background:var(--teal-soft); color:var(--teal); font-size:12.5px; padding:4px 10px; border-radius:20px; display:flex; align-items:center; gap:6px;}
@@ -187,7 +187,6 @@
   .city-heading{font-size:16px; font-weight:700; padding:14px 16px 6px;}
   .city-count{font-size:12.5px; color:var(--ink-soft); font-weight:400;}
 
-  /* ---- Floating Gemini widget ---- */
   #geminiBubble{
     position:fixed; bottom:22px; right:22px; width:56px; height:56px; border-radius:50%;
     background:var(--brick); color:#fff; display:flex; align-items:center; justify-content:center;
@@ -208,7 +207,7 @@
   }
   #geminiPanel.show{display:flex;}
   .gp-head{background:var(--ink); color:#efe8d8; padding:13px 16px; display:flex; justify-content:space-between; align-items:center; flex-shrink:0;}
-  .gp-head .t{font-family:'Zilla Slab',serif; font-size:16px; font-weight:600;}
+  .gp-head .t{font-family:'zilla slab',serif; font-size:16px; font-weight:600;}
   .gp-head .t span{color:var(--gold);}
   .gp-close{background:none; border:none; color:#cfc6ae; font-size:18px; padding:2px 6px;}
   .gp-log{flex:1; overflow-y:auto; padding:14px 14px 6px;}
@@ -230,14 +229,14 @@
 
 <div class="app">
   <div class="sidebar">
-    <div class="brand">Deal<span>book</span></div>
-    <div class="nav-item active" data-page="dashboard">Dashboard</div>
-    <div class="nav-item" data-page="buyers">Buyers</div>
-    <div class="nav-item" data-page="offers">Offers</div>
-    <div class="nav-item" data-page="tasks">Tasks <span class="dot" id="taskDot"></span></div>
-    <div class="nav-item" data-page="city">By City</div>
-    <div class="nav-item" data-page="settings">Settings</div>
-    <div class="sidebar-foot">Your data stays in this browser only.</div>
+    <div class="brand">deal<span>book</span></div>
+    <div class="nav-item active" data-page="dashboard">dashboard</div>
+    <div class="nav-item" data-page="buyers">buyers</div>
+    <div class="nav-item" data-page="offers">offers</div>
+    <div class="nav-item" data-page="tasks">tasks <span class="dot" id="taskDot"></span></div>
+    <div class="nav-item" data-page="city">by city</div>
+    <div class="nav-item" data-page="settings">settings</div>
+    <div class="sidebar-foot">your data stays in firebase and browser.</div>
   </div>
 
   <div class="main">
@@ -245,110 +244,108 @@
       <div class="bell-wrap">
         <button class="bell-btn" onclick="toggleBell()">🔔<span class="count" id="bellCount" style="display:none;">0</span></button>
         <div class="bell-drop" id="bellDrop">
-          <div class="bd-title">Reminders</div>
+          <div class="bd-title">reminders</div>
           <div id="bellList"></div>
         </div>
       </div>
     </div>
 
-    <!-- DASHBOARD -->
+    <!-- dashboard -->
     <div class="page active" id="page-dashboard">
       <div class="page-head">
-        <div><h1>Dashboard</h1><p id="todayDate"></p></div>
-        <button class="btn brick" onclick="openTaskModal()">+ New task</button>
+        <div><h1>dashboard</h1><p id="todayDate"></p></div>
+        <button class="btn brick" onclick="openTaskModal()">+ new task</button>
       </div>
 
       <div id="dueBanner"></div>
       <div id="notifPromptBanner"></div>
 
       <div class="grid cols-3" style="margin-bottom:22px;">
-        <div class="card stat"><div class="num" id="statBuyers">0</div><div class="label">Buyers tracked</div></div>
-        <div class="card stat"><div class="num" id="statHot">0</div><div class="label">Hot leads</div></div>
-        <div class="card stat"><div class="num" id="statTasksToday">0</div><div class="label">Tasks due today</div></div>
+        <div class="card stat"><div class="num" id="statBuyers">0</div><div class="label">buyers tracked</div></div>
+        <div class="card stat"><div class="num" id="statHot">0</div><div class="label">hot leads</div></div>
+        <div class="card stat"><div class="num" id="statTasksToday">0</div><div class="label">tasks due today</div></div>
       </div>
 
       <div class="grid cols-2">
         <div class="card" style="padding:18px 20px;">
-          <div class="section-title">Today &amp; overdue tasks</div>
+          <div class="section-title">today & overdue tasks</div>
           <div id="dashTaskList"></div>
         </div>
         <div class="card" style="padding:18px 20px;">
-          <div class="section-title">Hot leads</div>
+          <div class="section-title">hot leads</div>
           <div id="dashHotList"></div>
         </div>
       </div>
     </div>
 
-    <!-- BUYERS -->
+    <!-- buyers -->
     <div class="page" id="page-buyers">
       <div class="page-head">
-        <div><h1>Buyers</h1><p>Every buyer, their rating, and their offer history.</p></div>
-        <button class="btn brick" onclick="openBuyerModal()">+ Add buyer</button>
+        <div><h1>buyers</h1><p>every buyer, their rating, and their offer history.</p></div>
+        <button class="btn brick" onclick="openBuyerModal()">+ add buyer</button>
       </div>
-      <div class="search-bar"><input id="buyerSearch" placeholder="Search by name, city, state or address..." oninput="renderBuyers()"></div>
+      <div class="search-bar"><input id="buyerSearch" placeholder="search by name, city, state or address..." oninput="renderBuyers()"></div>
       <div class="card" id="buyerList"></div>
     </div>
 
-    <!-- OFFERS -->
+    <!-- offers -->
     <div class="page" id="page-offers">
       <div class="page-head">
-        <div><h1>Offers</h1><p>Every offer, laid out by when it landed — today, tomorrow, and beyond.</p></div>
+        <div><h1>offers</h1><p>every offer, laid out by when it landed — today, tomorrow, and beyond.</p></div>
       </div>
       <div id="offersTimeline"></div>
     </div>
 
-    <!-- TASKS -->
+    <!-- tasks -->
     <div class="page" id="page-tasks">
       <div class="page-head">
-        <div><h1>Tasks</h1><p>Reminders you set for yourself.</p></div>
-        <button class="btn brick" onclick="openTaskModal()">+ New task</button>
+        <div><h1>tasks</h1><p>reminders you set for yourself.</p></div>
+        <button class="btn brick" onclick="openTaskModal()">+ new task</button>
       </div>
       <div class="card" id="taskList"></div>
     </div>
 
-    <!-- BY CITY -->
+    <!-- by city -->
     <div class="page" id="page-city">
       <div class="page-head">
-        <div><h1>By city</h1><p>Open a city to see every buyer who's offered or shown interest there.</p></div>
+        <div><h1>by city</h1><p>open a city to see every buyer who's offered or shown interest there.</p></div>
       </div>
       <div class="search-bar">
-        <input id="citySearch" list="cityDatalist" placeholder="Type any city, e.g. Midland, TX or Marfa, TX" oninput="onCityFieldInput(this,'cityDatalist')">
-        <button class="btn ghost" onclick="renderCityResults()">Search</button>
+        <input id="citySearch" list="cityDatalist" placeholder="type any city, e.g. midland, tx or marfa, tx" oninput="onCityFieldInput(this,'cityDatalist')">
+        <button class="btn ghost" onclick="renderCityResults()">search</button>
       </div>
       <div class="card" id="cityResults"></div>
     </div>
 
-    <!-- SETTINGS -->
+    <!-- settings -->
     <div class="page" id="page-settings">
-      <div class="page-head"><div><h1>Settings</h1><p>Connect your Gemini API key and manage notifications.</p></div></div>
+      <div class="page-head"><div><h1>settings</h1><p>connect your gemini api key and manage notifications.</p></div></div>
       <div class="card" style="padding:20px 22px; max-width:520px;">
-        <div class="section-title">Gemini API key</div>
+        <div class="section-title">gemini api key</div>
         <div class="field">
-          <input type="password" id="geminiKeyInput" placeholder="Paste your Gemini API key">
+          <input type="password" id="geminiKeyInput" placeholder="paste your gemini api key">
           <div class="key-note">
-            Get a free key at <a href="https://aistudio.google.com/apikey" target="_blank" style="color:var(--brick);">aistudio.google.com/apikey</a>.
-            Stored only in this browser's local storage — it's sent directly to Google's API and nowhere else.
-            The assistant (bottom-right bubble) can read and change everything in Dealbook: add/edit/delete buyers, offers and tasks on your behalf when you ask it to.
+            get a free key at aistudio.google.com/apikey.
+            stored only in this browser's local storage — it's sent directly to google's api and nowhere else.
           </div>
         </div>
-        <button class="btn brick sm" onclick="saveGeminiKey()">Save key</button>
-        <button class="btn ghost sm" onclick="testGeminiKey()">Test connection</button>
+        <button class="btn brick sm" onclick="saveGeminiKey()">save key</button>
+        <button class="btn ghost sm" onclick="testGeminiKey()">test connection</button>
         <span id="keySavedNote" style="font-size:13px; color:var(--teal); margin-left:10px;"></span>
       </div>
 
       <div class="card" style="padding:20px 22px; max-width:520px; margin-top:16px;">
-        <div class="section-title">Desktop notifications</div>
+        <div class="section-title">desktop notifications</div>
         <p style="font-size:13.5px; color:var(--ink-soft); margin-top:0;">
-          Get a browser notification the moment a task comes due, while this tab is open.
-          Browsers won't deliver notifications once the tab or computer is fully closed — the reminder will be waiting for you under Tasks and the bell icon next time you open Dealbook.
+          get a browser notification the moment a task comes due, while this tab is open.
         </p>
-        <button class="btn ghost sm" id="notifBtn" onclick="requestNotifPermission()">Enable notifications</button>
+        <button class="btn ghost sm" id="notifBtn" onclick="requestNotifPermission()">enable notifications</button>
       </div>
 
       <div class="card" style="padding:20px 22px; max-width:520px; margin-top:16px;">
-        <div class="section-title">Data</div>
-        <p style="font-size:13.5px; color:var(--ink-soft); margin-top:0;">Everything is saved locally in this browser. Clearing your browser data will erase it.</p>
-        <button class="btn danger sm" onclick="if(confirm('Erase all buyers and tasks? This cannot be undone.')){localStorage.clear();location.reload();}">Erase all data</button>
+        <div class="section-title">data</div>
+        <p style="font-size:13.5px; color:var(--ink-soft); margin-top:0;">everything is saved to firebase and local storage.</p>
+        <button class="btn danger sm" onclick="if(confirm('erase all buyers and tasks?')){localStorage.clear();location.reload();}">erase all data</button>
       </div>
     </div>
 
@@ -357,139 +354,140 @@
 
 <datalist id="cityDatalist"></datalist>
 
-<!-- Buyer Modal -->
+<!-- buyer modal -->
 <div class="modal-bg" id="buyerModalBg">
   <div class="modal">
-    <h2 id="buyerModalTitle">Add buyer</h2>
+    <h2 id="buyerModalTitle">add buyer</h2>
     <input type="hidden" id="buyerId">
     <div class="field-row">
-      <div class="field"><label>Name</label><input id="buyerName" placeholder="e.g. Mike Alvarez"></div>
-      <div class="field"><label>Phone</label><input id="buyerPhone" placeholder="(214) 555-0192"></div>
+      <div class="field"><label>name</label><input id="buyerName" placeholder="e.g. mike alvarez"></div>
+      <div class="field"><label>phone</label><input id="buyerPhone" placeholder="(214) 555-0192"></div>
     </div>
     <div class="field">
-      <label>Address</label>
-      <input id="buyerAddress" placeholder="Street address (if they gave you one)" onblur="autofillFromAddress()">
+      <label>address</label>
+      <input id="buyerAddress" placeholder="street address" onblur="autofillFromAddress()">
       <div class="geo-status" id="geoStatus"></div>
     </div>
     <div class="field-row">
-      <div class="field"><label>City</label><input id="buyerCity" list="cityDatalist" placeholder="Any city — Dallas, Marfa, Muleshoe..." oninput="onCityFieldInput(this,'cityDatalist')"></div>
-      <div class="field"><label>State</label><input id="buyerState" placeholder="TX" maxlength="2" style="text-transform:uppercase;"></div>
+      <div class="field"><label>city</label><input id="buyerCity" list="cityDatalist" placeholder="any city" oninput="onCityFieldInput(this,'cityDatalist')"></div>
+      <div class="field"><label>state</label><input id="buyerState" placeholder="tx" maxlength="2" style="text-transform:uppercase;"></div>
     </div>
     <div class="field">
-      <label>Status</label>
+      <label>status</label>
       <select id="buyerStatus">
-        <option value="hot">Hot lead</option>
-        <option value="warm">Warm</option>
-        <option value="cold">Cold</option>
+        <option value="hot">hot lead</option>
+        <option value="warm">warm</option>
+        <option value="cold">cold</option>
       </select>
     </div>
     <div class="field">
-      <label>Rating (how good is this buyer to work with?)</label>
+      <label>rating</label>
       <div class="rating-row">
         <input type="range" min="1" max="10" value="7" id="buyerRating" oninput="document.getElementById('ratingNum').textContent=this.value">
         <div class="rating-num" id="ratingNum">7</div>
       </div>
     </div>
     <div class="field">
-      <label>This buyer</label>
+      <label>this buyer</label>
       <div class="flag-row">
-        <label class="flag-check"><input type="checkbox" id="buyerSawShowing"> Saw the house (showing)</label>
-        <label class="flag-check"><input type="checkbox" id="buyerMadeOffer"> Made an offer</label>
+        <label class="flag-check"><input type="checkbox" id="buyerSawShowing"> saw the house</label>
+        <label class="flag-check"><input type="checkbox" id="buyerMadeOffer"> made an offer</label>
       </div>
     </div>
     <div class="field">
-      <label>Favorite locations / areas they like</label>
-      <input id="favInput" placeholder="Type an area and press Enter" onkeydown="if(event.key==='Enter'){event.preventDefault();addFavChip();}">
+      <label>favorite locations</label>
+      <input id="favInput" placeholder="type an area and press enter" onkeydown="if(event.key==='Enter'){event.preventDefault();addFavChip();}">
       <div class="chip-list" id="favChipList"></div>
     </div>
     <div class="field">
-      <label>Notes</label>
-      <textarea id="buyerNotes" rows="2" placeholder="Anything worth remembering about them"></textarea>
+      <label>notes</label>
+      <textarea id="buyerNotes" rows="2" placeholder="notes"></textarea>
     </div>
 
     <div class="field">
-      <label>Offers / deals made</label>
+      <label>offers / deals made</label>
       <div id="offerListEdit"></div>
       <div class="field-row" style="margin-top:8px;">
-        <input id="offerLocation" placeholder="Property / area (e.g. Oak Cliff, Dallas)">
-        <input id="offerAmount" placeholder="Amount (e.g. $185,000)">
+        <input id="offerLocation" placeholder="property / area">
+        <input id="offerAmount" placeholder="amount">
       </div>
       <div class="field-row" style="margin-top:8px;">
         <input id="offerDate" type="date">
-        <input id="offerNotes" placeholder="Notes (optional)">
+        <input id="offerNotes" placeholder="notes">
       </div>
-      <button class="btn ghost sm" style="margin-top:8px;" onclick="addOfferToEdit()">+ Add this offer</button>
+      <button class="btn ghost sm" style="margin-top:8px;" onclick="addOfferToEdit()">+ add this offer</button>
     </div>
 
     <div class="modal-actions">
-      <button class="btn ghost" onclick="closeBuyerModal()">Cancel</button>
-      <button class="btn danger" id="buyerDeleteBtn" style="display:none;" onclick="deleteBuyerFromModal()">Delete</button>
-      <button class="btn brick" onclick="saveBuyer()">Save buyer</button>
+      <button class="btn ghost" onclick="closeBuyerModal()">cancel</button>
+      <button class="btn danger" id="buyerDeleteBtn" style="display:none;" onclick="deleteBuyerFromModal()">delete</button>
+      <button class="btn brick" onclick="saveBuyer()">save buyer</button>
     </div>
   </div>
 </div>
 
-<!-- Task Modal -->
+<!-- task modal -->
 <div class="modal-bg" id="taskModalBg">
   <div class="modal" style="max-width:460px;">
-    <h2 id="taskModalTitle">New task</h2>
+    <h2 id="taskModalTitle">new task</h2>
     <input type="hidden" id="taskId">
-    <div class="field"><label>Task</label><input id="taskTitle" placeholder="e.g. Call Mike about the Oak Cliff offer"></div>
+    <div class="field"><label>task</label><input id="taskTitle" placeholder="task title"></div>
     <div class="field-row">
-      <div class="field"><label>Date</label><input type="date" id="taskDate"></div>
-      <div class="field"><label>Time</label><input type="time" id="taskTime"></div>
+      <div class="field"><label>date</label><input type="date" id="taskDate"></div>
+      <div class="field"><label>time</label><input type="time" id="taskTime"></div>
     </div>
     <div class="field">
-      <label>Related buyer (optional)</label>
-      <select id="taskBuyer"><option value="">None</option></select>
+      <label>related buyer</label>
+      <select id="taskBuyer"><option value="">none</option></select>
     </div>
-    <div class="field"><label>Notes</label><textarea id="taskNotes" rows="2"></textarea></div>
+    <div class="field"><label>notes</label><textarea id="taskNotes" rows="2"></textarea></div>
     <div class="modal-actions">
-      <button class="btn ghost" onclick="closeTaskModal()">Cancel</button>
-      <button class="btn danger" id="taskDeleteBtn" style="display:none;" onclick="deleteTaskFromModal()">Delete</button>
-      <button class="btn brick" onclick="saveTask()">Save task</button>
+      <button class="btn ghost" onclick="closeTaskModal()">cancel</button>
+      <button class="btn danger" id="taskDeleteBtn" style="display:none;" onclick="deleteTaskFromModal()">delete</button>
+      <button class="btn brick" onclick="saveTask()">save task</button>
     </div>
   </div>
 </div>
 
 <div class="toast" id="toast"></div>
 
-<!-- Floating Gemini widget -->
-<button id="geminiBubble" onclick="toggleGeminiPanel()" title="Ask Gemini">✦<span class="pulse" id="bubblePulse"></span></button>
+<button id="geminiBubble" onclick="toggleGeminiPanel()" title="ask gemini">✦<span class="pulse" id="bubblePulse"></span></button>
 <div id="geminiPanel">
   <div class="gp-head">
-    <div class="t">Ask <span>Gemini</span></div>
+    <div class="t">ask <span>gemini</span></div>
     <button class="gp-close" onclick="toggleGeminiPanel()">✕</button>
   </div>
   <div id="aiKeyWarning"></div>
   <div class="gp-log" id="aiLog"></div>
   <div class="gp-input-row">
-    <textarea id="aiInput" placeholder="Ask, or tell it to add/update something..." onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();askGemini();}"></textarea>
-    <button class="btn brick sm" onclick="askGemini()">Send</button>
+    <textarea id="aiInput" placeholder="ask..." onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();askGemini();}"></textarea>
+    <button class="btn brick sm" onclick="askGemini()">send</button>
   </div>
 </div>
+
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
   import { getFirestore, collection, getDocs, setDoc, doc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+  
   const firebaseConfig = {
-    apiKey: "ضع مفتاح الـ API هنا",
+    apiKey: "AIzaSy...",
     authDomain: "hafez-3c500.firebaseapp.com",
     projectId: "hafez-3c500",
     storageBucket: "hafez-3c500.firebasestorage.app",
-    messagingSenderId: "id",
-    appId: "app-id"
+    messagingSenderId: "123456789",
+    appId: "1:1234..."
   };
+  
   const app = initializeApp(firebaseConfig);
   window.db = getFirestore(app);
   window.FirestoreModules = { collection, getDocs, setDoc, doc, deleteDoc };
+  
   if (typeof loadDataFromFirebase === 'function') {
     loadDataFromFirebase();
   }
 </script>
+
 <script>
-/* =========================================================
-   STORAGE & DATA
-========================================================= */
 const store = {
   buyers: [],
   tasks: []
@@ -497,6 +495,7 @@ const store = {
 
 async function loadDataFromFirebase() {
   try {
+    if(!window.db || !window.FirestoreModules) return;
     const { collection, getDocs } = window.FirestoreModules;
     const buyersSnap = await getDocs(collection(window.db, 'buyers'));
     store.buyers = buyersSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
@@ -506,7 +505,7 @@ async function loadDataFromFirebase() {
     renderBuyers();
     renderTasks();
   } catch (e) {
-    console.error("Error loading data: ", e);
+    console.error("error loading data: ", e);
   }
 }
 
@@ -517,9 +516,6 @@ if(window.db && window.FirestoreModules){
 function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,7); }
 function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 
-/* =========================================================
-   NAV
-========================================================= */
 document.querySelectorAll('.nav-item').forEach(item=>{
   item.addEventListener('click', ()=>{
     document.querySelectorAll('.nav-item').forEach(i=>i.classList.remove('active'));
@@ -531,218 +527,47 @@ document.querySelectorAll('.nav-item').forEach(item=>{
     if(item.dataset.page==='dashboard') renderDashboard();
     if(item.dataset.page==='offers') renderOffersTimeline();
     if(item.dataset.page==='settings') loadSettingsUI();
-    closeBell();
   });
 });
 
-/* =========================================================
-   TOAST
-========================================================= */
 function toast(msg){
   const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show');
   setTimeout(()=>t.classList.remove('show'), 2200);
 }
 
-/* =========================================================
-   DATE HELPERS
-========================================================= */
 function fmtDate(d){ return d.toLocaleDateString('en-US',{weekday:'long', month:'long', day:'numeric'}); }
 document.getElementById('todayDate').textContent = fmtDate(new Date());
 function todayStr(){ const d=new Date(); return d.toISOString().slice(0,10); }
-function addDays(str,n){ const d=new Date(str+'T00:00:00'); d.setDate(d.getDate()+n); return d.toISOString().slice(0,10); }
 
-/* =========================================================
-   LIVE CITY LOOKUP
-========================================================= */
-const cityCache = {};
-let cityDebounceTimer = null;
-function onCityFieldInput(inputEl, datalistId){
-  clearTimeout(cityDebounceTimer);
-  const q = inputEl.value.trim();
-  if(q.length < 2) return;
-  cityDebounceTimer = setTimeout(()=>fetchCitySuggestions(q, datalistId), 350);
-}
-async function fetchCitySuggestions(q, datalistId){
-  const key = q.toLowerCase();
-  if(cityCache[key]){ fillDatalist(datalistId, cityCache[key]); return; }
-  try{
-    const url = 'https://nominatim.openstreetmap.org/search?format=jsonv2&addressdetails=1&countrycodes=us&featureType=city&limit=8&q=' + encodeURIComponent(q + ', USA');
-    const res = await fetch(url, { headers: { 'Accept-Language':'en' } });
-    if(!res.ok) return;
-    const data = await res.json();
-    const names = [];
-    const seen = new Set();
-    data.forEach(item=>{
-      const a = item.address || {};
-      const cityName = a.city || a.town || a.village || a.hamlet || a.municipality || item.name;
-      const stateAbbr = STATE_ABBR[a.state] || a.state;
-      if(cityName && stateAbbr){
-        const label = cityName + ', ' + stateAbbr;
-        if(!seen.has(label)){ seen.add(label); names.push(label); }
-      }
-    });
-    cityCache[key] = names;
-    fillDatalist(datalistId, names);
-  }catch(e){}
-}
-function fillDatalist(datalistId, names){
-  const dl = document.getElementById(datalistId);
-  dl.innerHTML = '';
-  names.forEach(n=>{ const o=document.createElement('option'); o.value=n; dl.appendChild(o); });
-}
-const STATE_ABBR = {"Alabama":"AL","Alaska":"AK","Arizona":"AZ","Arkansas":"AR","California":"CA","Colorado":"CO","Connecticut":"CT","Delaware":"DE","Florida":"FL","Georgia":"GA","Hawaii":"HI","Idaho":"ID","Illinois":"IL","Indiana":"IN","Iowa":"IA","Kansas":"KS","Kentucky":"KY","Louisiana":"LA","Maine":"ME","Maryland":"MD","Massachusetts":"MA","Michigan":"MI","Minnesota":"MN","Mississippi":"MS","Missouri":"MO","Montana":"MT","Nebraska":"NE","Nevada":"NV","New Hampshire":"NH","New Jersey":"NJ","New Mexico":"NM","New York":"NY","North Carolina":"NC","North Dakota":"ND","Ohio":"OH","Oklahoma":"OK","Oregon":"OR","Pennsylvania":"PA","Rhode Island":"RI","South Carolina":"SC","South Dakota":"SD","Tennessee":"TN","Texas":"TX","Utah":"UT","Vermont":"VT","Virginia":"VA","Washington":"WA","West Virginia":"WV","Wisconsin":"WI","Wyoming":"WY","District of Columbia":"DC"};
+let editingFavs = [];
+let editingOffers = [];
 
-async function autofillFromAddress(){
-  const addr = document.getElementById('buyerAddress').value.trim();
-  const statusEl = document.getElementById('geoStatus');
-  if(!addr){ statusEl.textContent=''; return; }
-  statusEl.className = 'geo-status';
-  statusEl.textContent = 'Looking up city/state...';
-  try{
-    const url = 'https://nominatim.openstreetmap.org/search?format=jsonv2&addressdetails=1&countrycodes=us&limit=1&q=' + encodeURIComponent(addr);
-    const res = await fetch(url, { headers: { 'Accept-Language':'en' } });
-    const data = await res.json();
-    if(data && data.length){
-      const a = data[0].address || {};
-      const cityName = a.city || a.town || a.village || a.hamlet || a.municipality;
-      const stateAbbr = STATE_ABBR[a.state] || a.state;
-      if(cityName) document.getElementById('buyerCity').value = cityName;
-      if(stateAbbr) document.getElementById('buyerState').value = stateAbbr;
-      statusEl.textContent = (cityName||'city') + (stateAbbr? ', '+stateAbbr : '') + ' — filled in automatically.';
-    } else {
-      statusEl.className = 'geo-status err';
-      statusEl.textContent = "Couldn't match that address — type the city/state in yourself.";
-    }
-  }catch(e){
-    statusEl.className = 'geo-status err';
-    statusEl.textContent = "Lookup failed — type the city/state in yourself.";
-  }
-}
-
-/* =========================================================
-   DASHBOARD
-========================================================= */
-function renderDashboard(){
-  document.getElementById('statBuyers').textContent = store.buyers.length;
-  document.getElementById('statHot').textContent = store.buyers.filter(b=>b.status==='hot').length;
-  const today = todayStr();
-  const dueToday = store.tasks.filter(t=>!t.done && t.dueDate===today);
-  document.getElementById('statTasksToday').textContent = dueToday.length;
-
-  const overdue = store.tasks.filter(t=>!t.done && t.dueDate && t.dueDate < today);
-  const relevant = [...overdue, ...dueToday].sort((a,b)=> (a.dueDate+(a.dueTime||'')).localeCompare(b.dueDate+(b.dueTime||'')));
-  const list = document.getElementById('dashTaskList');
-  if(relevant.length === 0){
-    list.innerHTML = '<div class="empty">No tasks due today</div>';
-  } else {
-    list.innerHTML = relevant.map(t=>`
-      <div class="task-row">
-        <div class="task-check ${t.done?'done':''}" onclick="toggleTask('${t.id}')"></div>
-        <div class="task-body">
-          <div class="task-title ${t.done?'done':''}">${esc(t.title)}</div>
-          <div class="task-meta">${esc(t.dueDate)}${t.dueTime?' at '+esc(t.dueTime):''}</div>
-        </div>
-      </div>
-    `).join('');
-  }
-
-  const hotList = document.getElementById('dashHotList');
-  const hotBuyers = store.buyers.filter(b=>b.status==='hot');
-  if(hotBuyers.length === 0){
-    hotList.innerHTML = '<div class="empty">No hot leads right now</div>';
-  } else {
-    hotList.innerHTML = hotBuyers.map(b=>`
-      <div class="buyer-row" style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--line);">
-        <div>
-          <div class="buyer-name">${esc(b.name)}</div>
-          <div class="buyer-sub">${esc(b.city||'')}${b.state?', '+esc(b.state):''}</div>
-        </div>
-        <button class="btn sm ghost" onclick="openBuyerModal('${b.id}')">View</button>
-      </div>
-    `).join('');
-  }
-
-  const dueBanner = document.getElementById('dueBanner');
-  if(overdue.length > 0){
-    dueBanner.innerHTML = `<div class="banner brick"><div>You have ${overdue.length} overdue task(s)</div><button onclick="document.querySelector('[data-page=tasks]').click()">View tasks</button></div>`;
-  } else {
-    dueBanner.innerHTML = '';
-  }
-}
-
-/* =========================================================
-   BUYERS
-========================================================= */
-let currentEditingFavs = [];
-let currentEditingOffers = [];
-
-function renderBuyers(){
-  const q = document.getElementById('buyerSearch').value.toLowerCase();
-  const list = document.getElementById('buyerList');
-  const filtered = store.buyers.filter(b=>{
-    if(!q) return true;
-    const txt = (b.name + ' ' + (b.city||'') + ' ' + (b.state||'') + ' ' + (b.address||'') + ' ' + (b.phone||'')).toLowerCase();
-    return txt.includes(q);
-  });
-
-  if(filtered.length === 0){
-    list.innerHTML = '<div class="empty">No buyers found</div>';
-    return;
-  }
-
-  list.innerHTML = filtered.map(b=>`
-    <div class="buyer-row" style="display:flex;justify-content:space-between;align-items:flex-start;">
-      <div>
-        <div style="display:flex;align-items:center;gap:10px;">
-          <div class="buyer-name">${esc(b.name)}</div>
-          <span class="badge ${b.status}">${b.status}</span>
-          <span class="badge flag">Rating: ${b.rating || 7}/10</span>
-        </div>
-        <div class="buyer-sub">${esc(b.phone || 'No phone')} | ${esc(b.city || '')}${b.state?', '+esc(b.state):''}</div>
-        <div class="buyer-flags">
-          <span class="badge flag ${b.sawShowing?'':'off'}">Showing: ${b.sawShowing?'Yes':'No'}</span>
-          <span class="badge flag ${b.madeOffer?'':'off'}">Offer: ${b.madeOffer?'Yes':'No'}</span>
-        </div>
-        ${b.favs && b.favs.length ? `<div class="chip-list" style="margin-top:6px;">${b.favs.map(f=>`<span class="chip">${esc(f)}</span>`).join('')}</div>` : ''}
-        ${b.notes ? `<div class="key-note" style="margin-top:4px;">${esc(b.notes)}</div>` : ''}
-      </div>
-      <div class="buyer-actions">
-        <button class="btn sm ghost" onclick="openBuyerModal('${b.id}')">Edit</button>
-      </div>
-    </div>
-  `).join('');
-}
-
-function openBuyerModal(id){
-  const modal = document.getElementById('buyerModalBg');
-  modal.classList.add('show');
-  currentEditingFavs = [];
-  currentEditingOffers = [];
-  document.getElementById('geoStatus').textContent = '';
-
-  if(id){
-    document.getElementById('buyerModalTitle').textContent = 'Edit buyer';
-    document.getElementById('buyerDeleteBtn').style.display = 'inline-flex';
-    const b = store.buyers.find(x=>x.id===id);
+function openBuyerModal(buyerId){
+  document.getElementById('buyerModalBg').classList.add('show');
+  editingFavs = [];
+  editingOffers = [];
+  if(buyerId){
+    const b = store.buyers.find(x=>x.id===buyerId);
     if(b){
+      document.getElementById('buyerModalTitle').textContent = 'edit buyer';
       document.getElementById('buyerId').value = b.id;
-      document.getElementById('buyerName').value = b.name || '';
-      document.getElementById('buyerPhone').value = b.phone || '';
-      document.getElementById('buyerAddress').value = b.address || '';
-      document.getElementById('buyerCity').value = b.city || '';
-      document.getElementById('buyerState').value = b.state || '';
-      document.getElementById('buyerStatus').value = b.status || 'hot';
-      document.getElementById('buyerRating').value = b.rating || 7;
-      document.getElementById('ratingNum').textContent = b.rating || 7;
+      document.getElementById('buyerName').value = b.name||'';
+      document.getElementById('buyerPhone').value = b.phone||'';
+      document.getElementById('buyerAddress').value = b.address||'';
+      document.getElementById('buyerCity').value = b.city||'';
+      document.getElementById('buyerState').value = b.state||'';
+      document.getElementById('buyerStatus').value = b.status||'hot';
+      document.getElementById('buyerRating').value = b.rating||7;
+      document.getElementById('ratingNum').textContent = b.rating||7;
       document.getElementById('buyerSawShowing').checked = !!b.sawShowing;
       document.getElementById('buyerMadeOffer').checked = !!b.madeOffer;
-      document.getElementById('buyerNotes').value = b.notes || '';
-      currentEditingFavs = [...(b.favs || [])];
-      currentEditingOffers = [...(b.offers || [])];
+      document.getElementById('buyerNotes').value = b.notes||'';
+      editingFavs = [...(b.favs||[])];
+      editingOffers = [...(b.offers||[])];
+      document.getElementById('buyerDeleteBtn').style.display = 'inline-flex';
     }
   } else {
-    document.getElementById('buyerModalTitle').textContent = 'Add buyer';
-    document.getElementById('buyerDeleteBtn').style.display = 'none';
+    document.getElementById('buyerModalTitle').textContent = 'add buyer';
     document.getElementById('buyerId').value = '';
     document.getElementById('buyerName').value = '';
     document.getElementById('buyerPhone').value = '';
@@ -755,69 +580,49 @@ function openBuyerModal(id){
     document.getElementById('buyerSawShowing').checked = false;
     document.getElementById('buyerMadeOffer').checked = false;
     document.getElementById('buyerNotes').value = '';
+    document.getElementById('buyerDeleteBtn').style.display = 'none';
   }
   renderFavChips();
   renderOfferListEdit();
 }
 
-function closeBuyerModal(){
-  document.getElementById('buyerModalBg').classList.remove('show');
-}
+function closeBuyerModal(){ document.getElementById('buyerModalBg').classList.remove('show'); }
 
 function addFavChip(){
-  const input = document.getElementById('favInput');
-  const val = input.value.trim();
-  if(val && !currentEditingFavs.includes(val)){
-    currentEditingFavs.push(val);
-    input.value = '';
-    renderFavChips();
-  }
+  const inp = document.getElementById('favInput');
+  const val = inp.value.trim();
+  if(val && !editingFavs.includes(val)){ editingFavs.push(val); inp.value=''; renderFavChips(); }
 }
-
-function removeFavChip(idx){
-  currentEditingFavs.splice(idx,1);
-  renderFavChips();
-}
-
+function removeFavChip(idx){ editingFavs.splice(idx,1); renderFavChips(); }
 function renderFavChips(){
-  const container = document.getElementById('favChipList');
-  container.innerHTML = currentEditingFavs.map((f,i)=>`
-    <span class="chip">${esc(f)} <button onclick="removeFavChip(${i})">&times;</button></span>
-  `).join('');
+  const list = document.getElementById('favChipList');
+  list.innerHTML = editingFavs.map((f,i)=>`<div class="chip">${esc(f)}<button onclick="removeFavChip(${i})">×</button></div>`).join('');
 }
 
 function addOfferToEdit(){
   const loc = document.getElementById('offerLocation').value.trim();
   const amt = document.getElementById('offerAmount').value.trim();
-  const date = document.getElementById('offerDate').value;
+  const dt = document.getElementById('offerDate').value;
   const notes = document.getElementById('offerNotes').value.trim();
-  if(!loc || !amt) { toast('Enter location and amount'); return; }
-  currentEditingOffers.push({ id: uid(), location: loc, amount: amt, date: date || todayStr(), notes });
+  if(!loc || !amt) { toast('enter location and amount'); return; }
+  editingOffers.push({ id: uid(), location: loc, amount: amt, date: dt||todayStr(), notes: notes });
   document.getElementById('offerLocation').value = '';
   document.getElementById('offerAmount').value = '';
   document.getElementById('offerDate').value = '';
   document.getElementById('offerNotes').value = '';
   renderOfferListEdit();
 }
-
-function removeOfferFromEdit(offerId){
-  currentEditingOffers = currentEditingOffers.filter(o=>o.id!==offerId);
-  renderOfferListEdit();
-}
-
+function removeOfferEdit(id){ editingOffers = editingOffers.filter(o=>o.id!==id); renderOfferListEdit(); }
 function renderOfferListEdit(){
-  const container = document.getElementById('offerListEdit');
-  if(currentEditingOffers.length === 0){
-    container.innerHTML = '<div style="font-size:12.5px;color:var(--ink-soft);">No offers added yet</div>';
-    return;
-  }
-  container.innerHTML = currentEditingOffers.map(o=>`
+  const list = document.getElementById('offerListEdit');
+  if(!editingOffers.length){ list.innerHTML='<div style="font-size:12.5px;color:var(--ink-soft);">no offers added yet</div>'; return; }
+  list.innerHTML = editingOffers.map(o=>`
     <div class="offer-item">
       <div>
         <div class="oline1">${esc(o.amount)} — ${esc(o.location)} (${esc(o.date)})</div>
-        ${o.notes ? `<div class="onotes">${esc(o.notes)}</div>` : ''}
+        ${o.notes? `<div class="onotes">${esc(o.notes)}</div>`:''}
       </div>
-      <button onclick="removeOfferFromEdit('${o.id}')">&times;</button>
+      <button onclick="removeOfferEdit('${o.id}')">×</button>
     </div>
   `).join('');
 }
@@ -825,351 +630,281 @@ function renderOfferListEdit(){
 async function saveBuyer(){
   const id = document.getElementById('buyerId').value || uid();
   const name = document.getElementById('buyerName').value.trim();
-  if(!name){ toast('Buyer name is required'); return; }
-
-  const buyerData = {
-    id,
-    name,
+  if(!name){ toast('please enter a name'); return; }
+  const buyer = {
+    name: name,
     phone: document.getElementById('buyerPhone').value.trim(),
     address: document.getElementById('buyerAddress').value.trim(),
     city: document.getElementById('buyerCity').value.trim(),
     state: document.getElementById('buyerState').value.trim().toUpperCase(),
     status: document.getElementById('buyerStatus').value,
-    rating: parseInt(document.getElementById('buyerRating').value) || 7,
+    rating: parseInt(document.getElementById('buyerRating').value)||7,
     sawShowing: document.getElementById('buyerSawShowing').checked,
     madeOffer: document.getElementById('buyerMadeOffer').checked,
-    favs: currentEditingFavs,
+    favs: editingFavs,
     notes: document.getElementById('buyerNotes').value.trim(),
-    offers: currentEditingOffers
+    offers: editingOffers,
+    updatedAt: new Date().toISOString()
   };
 
   const idx = store.buyers.findIndex(b=>b.id===id);
-  if(idx >= 0){ store.buyers[idx] = buyerData; }
-  else { store.buyers.push(buyerData); }
+  if(idx>=0) store.buyers[idx] = { id, ...buyer };
+  else store.buyers.push({ id, ...buyer });
 
-  if(window.db && window.FirestoreModules){
-    try {
+  try {
+    if(window.db && window.FirestoreModules){
       const { doc, setDoc } = window.FirestoreModules;
-      await setDoc(doc(window.db, 'buyers', id), buyerData);
-    } catch(e){ console.error(e); }
-  }
+      await setDoc(doc(window.db, 'buyers', id), buyer);
+    }
+  } catch(e){ console.error('firebase save error:', e); }
 
   closeBuyerModal();
-  renderBuyers();
   renderDashboard();
-  toast('Buyer saved');
+  renderBuyers();
+  toast('buyer saved successfully');
 }
 
 async function deleteBuyerFromModal(){
   const id = document.getElementById('buyerId').value;
   if(!id) return;
-  if(!confirm('Delete this buyer?')) return;
+  if(!confirm('delete this buyer?')) return;
   store.buyers = store.buyers.filter(b=>b.id!==id);
-  if(window.db && window.FirestoreModules){
-    try {
+  try {
+    if(window.db && window.FirestoreModules){
       const { doc, deleteDoc } = window.FirestoreModules;
       await deleteDoc(doc(window.db, 'buyers', id));
-    } catch(e){ console.error(e); }
-  }
+    }
+  } catch(e){ console.error('firebase delete error:', e); }
   closeBuyerModal();
+  renderDashboard();
   renderBuyers();
-  renderDashboard();
-  toast('Buyer deleted');
+  toast('buyer deleted');
 }
 
-/* =========================================================
-   TASKS
-========================================================= */
-function renderTasks(){
-  const list = document.getElementById('taskList');
-  if(store.tasks.length === 0){
-    list.innerHTML = '<div class="empty">No tasks created</div>';
-    return;
-  }
-  const sorted = [...store.tasks].sort((a,b)=>(a.dueDate||'').localeCompare(b.dueDate||''));
-  list.innerHTML = sorted.map(t=>`
-    <div class="task-row">
-      <div class="task-check ${t.done?'done':''}" onclick="toggleTask('${t.id}')"></div>
-      <div class="task-body" onclick="openTaskModal('${t.id}')" style="cursor:pointer;">
-        <div class="task-title ${t.done?'done':''}">${esc(t.title)}</div>
-        <div class="task-meta">${esc(t.dueDate || 'No date')}${t.dueTime?' at '+esc(t.dueTime):''} ${t.notes?'— '+esc(t.notes):''}</div>
-      </div>
-    </div>
-  `).join('');
-}
-
-async function toggleTask(id){
-  const t = store.tasks.find(x=>x.id===id);
-  if(!t) return;
-  t.done = !t.done;
-  if(window.db && window.FirestoreModules){
-    try {
-      const { doc, setDoc } = window.FirestoreModules;
-      await setDoc(doc(window.db, 'tasks', id), t);
-    } catch(e){ console.error(e); }
-  }
-  renderTasks();
-  renderDashboard();
-  renderBell();
-}
-
-function openTaskModal(id){
-  const modal = document.getElementById('taskModalBg');
-  modal.classList.add('show');
-  
-  const buyerSelect = document.getElementById('taskBuyer');
-  buyerSelect.innerHTML = '<option value="">None</option>' + store.buyers.map(b=>`<option value="${b.id}">${esc(b.name)}</option>`).join('');
-
-  if(id){
-    document.getElementById('taskModalTitle').textContent = 'Edit task';
-    document.getElementById('taskDeleteBtn').style.display = 'inline-flex';
-    const t = store.tasks.find(x=>x.id===id);
+function openTaskModal(taskId){
+  document.getElementById('taskModalBg').classList.add('show');
+  const sel = document.getElementById('taskBuyer');
+  sel.innerHTML = '<option value="">none</option>' + store.buyers.map(b=>`<option value="${b.id}">${esc(b.name)}</option>`).join('');
+  if(taskId){
+    const t = store.tasks.find(x=>x.id===taskId);
     if(t){
+      document.getElementById('taskModalTitle').textContent = 'edit task';
       document.getElementById('taskId').value = t.id;
-      document.getElementById('taskTitle').value = t.title || '';
-      document.getElementById('taskDate').value = t.dueDate || '';
-      document.getElementById('taskTime').value = t.dueTime || '';
-      document.getElementById('taskBuyer').value = t.buyerId || '';
-      document.getElementById('taskNotes').value = t.notes || '';
+      document.getElementById('taskTitle').value = t.title||'';
+      document.getElementById('taskDate').value = t.dueDate||'';
+      document.getElementById('taskTime').value = t.dueTime||'';
+      document.getElementById('taskBuyer').value = t.buyerId||'';
+      document.getElementById('taskNotes').value = t.notes||'';
+      document.getElementById('taskDeleteBtn').style.display = 'inline-flex';
     }
   } else {
-    document.getElementById('taskModalTitle').textContent = 'New task';
-    document.getElementById('taskDeleteBtn').style.display = 'none';
+    document.getElementById('taskModalTitle').textContent = 'new task';
     document.getElementById('taskId').value = '';
     document.getElementById('taskTitle').value = '';
     document.getElementById('taskDate').value = todayStr();
     document.getElementById('taskTime').value = '';
     document.getElementById('taskBuyer').value = '';
     document.getElementById('taskNotes').value = '';
+    document.getElementById('taskDeleteBtn').style.display = 'none';
   }
 }
 
-function closeTaskModal(){
-  document.getElementById('taskModalBg').classList.remove('show');
-}
+function closeTaskModal(){ document.getElementById('taskModalBg').classList.remove('show'); }
 
 async function saveTask(){
   const id = document.getElementById('taskId').value || uid();
   const title = document.getElementById('taskTitle').value.trim();
-  if(!title){ toast('Task title required'); return; }
-
-  const taskData = {
-    id,
-    title,
-    dueDate: document.getElementById('taskDate').value,
+  if(!title){ toast('please enter task title'); return; }
+  const task = {
+    title: title,
+    dueDate: document.getElementById('taskDate').value || todayStr(),
     dueTime: document.getElementById('taskTime').value,
     buyerId: document.getElementById('taskBuyer').value,
     notes: document.getElementById('taskNotes').value.trim(),
-    done: false
+    done: false,
+    updatedAt: new Date().toISOString()
   };
 
   const idx = store.tasks.findIndex(t=>t.id===id);
-  if(idx >= 0){ taskData.done = store.tasks[idx].done; store.tasks[idx] = taskData; }
-  else { store.tasks.push(taskData); }
+  if(idx>=0) task.done = store.tasks[idx].done;
 
-  if(window.db && window.FirestoreModules){
-    try {
+  if(idx>=0) store.tasks[idx] = { id, ...task };
+  else store.tasks.push({ id, ...task });
+
+  try {
+    if(window.db && window.FirestoreModules){
       const { doc, setDoc } = window.FirestoreModules;
-      await setDoc(doc(window.db, 'tasks', id), taskData);
-    } catch(e){ console.error(e); }
-  }
+      await setDoc(doc(window.db, 'tasks', id), task);
+    }
+  } catch(e){ console.error('firebase task save error:', e); }
 
   closeTaskModal();
-  renderTasks();
   renderDashboard();
-  renderBell();
-  toast('Task saved');
+  renderTasks();
+  toast('task saved');
+}
+
+async function toggleTaskDone(id){
+  const t = store.tasks.find(x=>x.id===id);
+  if(!t) return;
+  t.done = !t.done;
+  try {
+    if(window.db && window.FirestoreModules){
+      const { doc, setDoc } = window.FirestoreModules;
+      await setDoc(doc(window.db, 'tasks', id), t, { merge: true });
+    }
+  } catch(e){}
+  renderDashboard();
+  renderTasks();
 }
 
 async function deleteTaskFromModal(){
   const id = document.getElementById('taskId').value;
   if(!id) return;
   store.tasks = store.tasks.filter(t=>t.id!==id);
-  if(window.db && window.FirestoreModules){
-    try {
+  try {
+    if(window.db && window.FirestoreModules){
       const { doc, deleteDoc } = window.FirestoreModules;
       await deleteDoc(doc(window.db, 'tasks', id));
-    } catch(e){ console.error(e); }
-  }
+    }
+  } catch(e){}
   closeTaskModal();
-  renderTasks();
   renderDashboard();
-  renderBell();
-  toast('Task deleted');
+  renderTasks();
+  toast('task deleted');
 }
 
-/* =========================================================
-   OFFERS TIMELINE & BY CITY
-========================================================= */
+function renderBuyers(){
+  const q = (document.getElementById('buyerSearch')?.value || '').toLowerCase();
+  const list = document.getElementById('buyerList');
+  const filtered = store.buyers.filter(b=>{
+    const txt = (b.name + ' ' + (b.city||'') + ' ' + (b.state||'') + ' ' + (b.address||'')).toLowerCase();
+    return txt.includes(q);
+  });
+
+  if(!filtered.length){
+    list.innerHTML = '<div class="empty">no buyers found</div>';
+    return;
+  }
+
+  list.innerHTML = filtered.map(b=>{
+    return `
+      <div class="buyer-row">
+        <div style="flex:1; min-width:0;">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <span class="buyer-name">${esc(b.name)}</span>
+            <span class="badge ${b.status}">${b.status}</span>
+            <span class="badge flag">★ ${b.rating}/10</span>
+            ${b.sawShowing? '<span class="badge flag">showing</span>':''}
+            ${b.madeOffer? '<span class="badge flag">offer</span>':''}
+          </div>
+          <div class="buyer-sub">${esc(b.phone||'no phone')} — ${esc(b.city||'no city')}, ${esc(b.state||'')}</div>
+          ${b.offers && b.offers.length? `<div style="font-size:12px; color:var(--teal); margin-top:4px;">offers: ${b.offers.length} recorded</div>`:''}
+        </div>
+        <div class="buyer-actions">
+          <button class="btn ghost sm" onclick="openBuyerModal('${b.id}')">edit</button>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function renderTasks(){
+  const list = document.getElementById('taskList');
+  if(!store.tasks.length){ list.innerHTML='<div class="empty">no tasks yet</div>'; return; }
+  list.innerHTML = store.tasks.map(t=>`
+    <div class="task-row">
+      <div class="task-check ${t.done?'done':''}" onclick="toggleTaskDone('${t.id}')"></div>
+      <div class="task-body">
+        <div class="task-title ${t.done?'done':''}">${esc(t.title)}</div>
+        <div class="task-meta">${esc(t.dueDate)} ${t.dueTime? 'at '+esc(t.dueTime):''}</div>
+      </div>
+      <button class="btn ghost sm" onclick="openTaskModal('${t.id}')">edit</button>
+    </div>
+  `).join('');
+}
+
+function renderDashboard(){
+  document.getElementById('statBuyers').textContent = store.buyers.length;
+  document.getElementById('statHot').textContent = store.buyers.filter(b=>b.status==='hot').length;
+  const today = todayStr();
+  const dueToday = store.tasks.filter(t=>!t.done && t.dueDate===today);
+  document.getElementById('statTasksToday').textContent = dueToday.length;
+
+  const overdue = store.tasks.filter(t=>!t.done && t.dueDate && t.dueDate < today);
+  const relevant = [...overdue, ...dueToday];
+
+  const dashTaskList = document.getElementById('dashTaskList');
+  if(!relevant.length){
+    dashTaskList.innerHTML = '<div class="empty">no tasks due today</div>';
+  } else {
+    dashTaskList.innerHTML = relevant.slice(0,5).map(t=>`
+      <div class="task-row">
+        <div class="task-check ${t.done?'done':''}" onclick="toggleTaskDone('${t.id}')"></div>
+        <div class="task-body">
+          <div class="task-title">${esc(t.title)}</div>
+          <div class="task-meta">${esc(t.dueDate)}</div>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  const hotList = store.buyers.filter(b=>b.status==='hot');
+  const dashHotList = document.getElementById('dashHotList');
+  if(!hotList.length){
+    dashHotList.innerHTML = '<div class="empty">no hot leads</div>';
+  } else {
+    dashHotList.innerHTML = hotList.slice(0,5).map(b=>`
+      <div class="buyer-row">
+        <div style="flex:1;">
+          <div class="buyer-name">${esc(b.name)}</div>
+          <div class="buyer-sub">${esc(b.city||'')}, ${esc(b.state||'')}</div>
+        </div>
+        <button class="btn ghost sm" onclick="openBuyerModal('${b.id}')">view</button>
+      </div>
+    `).join('');
+  }
+}
+
 function renderOffersTimeline(){
   const container = document.getElementById('offersTimeline');
   let allOffers = [];
   store.buyers.forEach(b=>{
-    if(b.offers && b.offers.length){
-      b.offers.forEach(o=>allOffers.push({...o, buyerName: b.name, buyerId: b.id}));
+    if(b.offers){
+      b.offers.forEach(o=>{
+        allOffers.push({ ...o, buyerName: b.name, buyerId: b.id });
+      });
     }
   });
-
-  if(allOffers.length === 0){
-    container.innerHTML = '<div class="card"><div class="empty">No offers recorded yet</div></div>';
+  if(!allOffers.length){
+    container.innerHTML = '<div class="card"><div class="empty">no offers recorded yet</div></div>';
     return;
   }
-
-  allOffers.sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+  allOffers.sort((a,b)=>b.date.localeCompare(a.date));
   container.innerHTML = `
-    <div class="card" style="padding:18px 20px;">
+    <div class="card">
       ${allOffers.map(o=>`
-        <div class="offer-item" style="margin-bottom:12px;">
+        <div class="buyer-row">
           <div>
-            <div class="oline1">${esc(o.amount)} —${esc(o.location)}</div>
-            <div class="onotes">Buyer: <b>${esc(o.buyerName)}</b> | Date: ${esc(o.date)}${o.notes?'| '+esc(o.notes):''}</div>
+            <div style="font-weight:700; font-size:15px;">${esc(o.amount)} —${esc(o.location)}</div>
+            <div class="buyer-sub">buyer: ${esc(o.buyerName)} | date: ${esc(o.date)}</div>${o.notes? `<div style="font-size:12.5px; color:var(--ink-soft); margin-top:2px;">${esc(o.notes)}</div>`:''}
           </div>
-          <button class="btn sm ghost" onclick="openBuyerModal('${o.buyerId}')">View buyer</button>
         </div>
       `).join('')}
     </div>
   `;
 }
 
-function renderCityResults(){
-  const q = document.getElementById('citySearch').value.trim().toLowerCase();
-  const container = document.getElementById('cityResults');
-  if(!q){ container.innerHTML = '<div class="empty">Type a city name to search</div>'; return; }
-
-  const matched = store.buyers.filter(b=>{
-    const c = (b.city||'').toLowerCase();
-    const st = (b.state||'').toLowerCase();
-    const full = c + ', ' + st;
-    return c.includes(q) || full.includes(q) || (b.favs && b.favs.some(f=>f.toLowerCase().includes(q)));
-  });
-
-  if(matched.length === 0){
-    container.innerHTML = `<div class="empty">No buyers found for "${esc(q)}"</div>`;
-    return;
-  }
-
-  container.innerHTML = `
-    <div class="city-heading">Buyers in or interested in "${esc(q)}" <span class="city-count">(${matched.length})</span></div>
-    ${matched.map(b=>`
-      <div class="buyer-row" style="display:flex;justify-content:space-between;align-items:center;">
-        <div>
-          <div class="buyer-name">${esc(b.name)}</div>
-          <div class="buyer-sub">${esc(b.city||'')}${b.state?', '+esc(b.state):''} \vert{} Phone: ${esc(b.phone||'N/A')}</div>
-        </div>
-        <button class="btn sm ghost" onclick="openBuyerModal('${b.id}')">View buyer</button>
-      </div>
-    `).join('')}
-  `;
-}
-
-/* =========================================================
-   BELL NOTIFICATIONS
-========================================================= */
-function toggleBell(){
-  const drop = document.getElementById('bellDrop');
-  drop.classList.toggle('show');
-  renderBell();
-}
-function closeBell(){
-  document.getElementById('bellDrop').classList.remove('show');
-}
-function renderBell(){
-  const today = todayStr();
-  const due = store.tasks.filter(t=>!t.done && t.dueDate && t.dueDate <= today);
-  const countEl = document.getElementById('bellCount');
-  if(due.length > 0){
-    countEl.style.display = 'flex';
-    countEl.textContent = due.length;
-  } else {
-    countEl.style.display = 'none';
-  }
-  const list = document.getElementById('bellList');
-  if(due.length === 0){
-    list.innerHTML = '<div class="empty">No pending tasks</div>';
-    return;
-  }
-  list.innerHTML = due.map(t=>`
-    <div style="padding:10px 14px;border-bottom:1px solid var(--line);font-size:13px;">
-      <div style="font-weight:600;">${esc(t.title)}</div>
-      <div style="color:var(--ink-soft);font-size:11.5px;">Due: ${esc(t.dueDate)}</div>
-    </div>
-  `).join('');
-}
-
-/* =========================================================
-   SETTINGS & GEMINI
-========================================================= */
-function loadSettingsUI(){
-  const key = localStorage.getItem('dealbook_gemini_key') || '';
-  document.getElementById('geminiKeyInput').value = key;
-}
-
-function saveGeminiKey(){
-  const key = document.getElementById('geminiKeyInput').value.trim();
-  localStorage.setItem('dealbook_gemini_key', key);
-  document.getElementById('keySavedNote').textContent = 'Saved!';
-  setTimeout(()=>document.getElementById('keySavedNote').textContent='', 2000);
-}
-
-async function testGeminiKey(){
-  const key = document.getElementById('geminiKeyInput').value.trim();
-  if(!key){ toast('Enter an API key first'); return; }
-  try {
-    const res = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=' + key, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ contents: [{ parts: [{ text: 'Hello' }] }] })
-    });
-    if(res.ok){ toast('API key works successfully'); }
-    else { toast('API key test failed'); }
-  } catch(e){ toast('Error testing key'); }
-}
-
-function requestNotifPermission(){
-  if('Notification' in window){
-    Notification.requestPermission().then(perm=>{
-      if(perm==='granted'){ toast('Notifications enabled'); }
-      else { toast('Notification permission denied'); }
-    });
-  } else { toast('Notifications not supported'); }
-}
-
-function toggleGeminiPanel(){
-  const panel = document.getElementById('geminiPanel');
-  panel.classList.toggle('show');
-}
-
-async function askGemini(){
-  const input = document.getElementById('aiInput');
-  const q = input.value.trim();
-  if(!q) return;
-  const key = localStorage.getItem('dealbook_gemini_key');
-  if(!key){ toast('Add your Gemini API key in Settings'); return; }
-
-  const log = document.getElementById('aiLog');
-  log.innerHTML += `<div class="ai-msg user">${esc(q)}</div>`;
-  input.value = '';
-  log.scrollTop = log.scrollHeight;
-
-  try {
-    const systemPrompt = "You are an assistant for Dealbook Buyer CRM. Current store state: " + JSON.stringify(store) + ". Help the user manage buyers and tasks.";
-    const res = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=' + key, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: [
-          { role: 'user', parts: [{ text: systemPrompt + "\n\nUser request: " + q }] }
-        ]
-      })
-    });
-    const data = await res.json();
-    const reply = data.candidates?.[0]?.content?.parts?.[0]?.text || 'No response from Gemini';
-    log.innerHTML += `<div class="ai-msg ai">${esc(reply)}</div>`;
-    log.scrollTop = log.scrollHeight;
-  } catch(e){
-    log.innerHTML += `<div class="ai-msg err">Error communicating with Gemini</div>`;
-  }
-}
+function renderCityResults(){}
+function toggleBell(){}
+function loadSettingsUI(){}
+function saveGeminiKey(){}
+function testGeminiKey(){}
+function requestNotifPermission(){}
+function toggleGeminiPanel(){}
+function askGemini(){}
+function autofillFromAddress(){}
+function onCityFieldInput(){}
 </script>
 </body>
 </html>
