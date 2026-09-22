@@ -86,7 +86,7 @@
   .badge{display:inline-block; font-size:11.5px; font-weight:600; padding:2px 8px; border-radius:20px; letter-spacing:.2px;}
   .badge.hot{background:#f4e2dc; color:var(--brick-dark);}
   .badge.warm{background:#f2e6c9; color:#7a5a1c;}
-  .badge.cold{background:#teal-soft; color:var(--teal);}
+  .badge.cold{background:var(--teal-soft); color:var(--teal);}
   .empty{padding:26px 16px; text-align:center; color:var(--ink-soft); font-size:14px;}
   input, select, textarea{
     font-family:inherit; font-size:14px; padding:9px 11px; border:1px solid var(--line);
@@ -217,7 +217,7 @@
         <div><h1>by city</h1><p>type any city in us or texas to filter instantly</p></div>
       </div>
       <div class="search-bar">
-        <input id="citySearch" list="cityDatalist" placeholder="type any city, e.g. dallas, tx or houston, tx..." oninput="renderCityResults()">
+        <input id="citySearch" list="cityDatalist" placeholder="type any city, e.g. dallas, tx or marfa, tx..." oninput="renderCityResults()">
         <button class="btn ghost" onclick="renderCityResults()">search</button>
       </div>
       <datalist id="cityDatalist"></datalist>
@@ -259,9 +259,10 @@
       <input id="buyerAddress" placeholder="street address">
     </div>
     <div class="field-row">
-      <div class="field"><label>city</label><input id="buyerCity" list="cityDatalist" placeholder="any city, e.g. dallas, tx"></div>
+      <div class="field"><label>city</label><input id="buyerCity" list="modalCityDatalist" placeholder="any city, e.g. dallas, tx" oninput="onModalCityInput(this)"></div>
       <div class="field"><label>state</label><input id="buyerState" placeholder="tx" maxlength="2" style="text-transform:uppercase;"></div>
     </div>
+    <datalist id="modalCityDatalist"></datalist>
     <div class="field">
       <label>status</label>
       <select id="buyerStatus">
@@ -368,8 +369,8 @@
 </script>
 <script>
 const US_CITIES = [
-  "Dallas, TX", "Houston, TX", "Austin, TX", "San Antonio, TX", "Fort Worth, TX", "El Paso, TX", "Arlington, TX", "Corpus Christi, TX", "Plano, TX", "Laredo, TX", "Lubbock, TX", "Garland, TX", "Irving, TX", "Amarillo, TX", "Grand Prairie, TX", "McKinney, TX", "Frisco, TX", "Brownsville, TX", "Pasadena, TX", "Killeen, TX", "Mesodon, TX", "Denton, TX", "Waco, TX", "Midland, TX", "Carrollton, TX", "Round Rock, TX", "Abilene, TX", "Pearland, TX", "College Station, TX", "Richardson, TX", "The Woodlands, TX", "Beaumont, TX", "Odessa, TX", "Tyler, TX", "Wichita Falls, TX", "Lewisville, TX", "League City, TX", "Tyler, TX", "San Angelo, TX", "Allen, TX", "Sugar Land, TX", "Edinburg, TX", "Conroe, TX", "Mission, TX", "Longview, TX", "Bryan, TX", "Pharr, TX", "Baytown, TX", "Missouri City, TX", "Temple, TX", "Flower Mound, TX", "New Braunfels, TX", "North Richland Hills, TX", "Victoria, TX", "Conroe, TX", "Harlingen, TX", "Pflugerville, TX", "Grapevine, TX", "DeSoto, TX", "Marfa, TX", "Muleshoe, TX",
-  "New York, NY", "Los Angeles, CA", "Chicago, IL", "Houston, TX", "Phoenix, AZ", "Philadelphia, PA", "San Antonio, TX", "San Diego, CA", "Dallas, TX", "San Jose, CA", "Austin, TX", "Jacksonville, FL", "Fort Worth, TX", "Columbus, OH", "Indianapolis, IN", "Charlotte, NC", "San Francisco, CA", "Seattle, WA", "Denver, CO", "Washington, DC", "Boston, MA", "El Paso, TX", "Nashville, TN", "Detroit, MI", "Oklahoma City, OK", "Portland, OR", "Las Vegas, NV", "Memphis, TN", "Louisville, KY", "Baltimore, MD", "Milwaukee, WI", "Albuquerque, NM", "Tucson, AZ", "Fresno, CA", "Sacramento, CA", "Kansas City, MO", "Mesa, AZ", "Atlanta, GA", "Omaha, NE", "Colorado Springs, CO", "Raleigh, NC", "Miami, FL", "Long Beach, CA", "Virginia Beach, VA", "Oakland, CA", "Minneapolis, MN", "Tulsa, OK", "Arlington, TX", "Tampa, FL", "New Orleans, LA"
+  "Dallas, TX", "Houston, TX", "Austin, TX", "San Antonio, TX", "Fort Worth, TX", "El Paso, TX", "Arlington, TX", "Corpus Christi, TX", "Plano, TX", "Laredo, TX", "Lubbock, TX", "Garland, TX", "Irving, TX", "Amarillo, TX", "Grand Prairie, TX", "McKinney, TX", "Frisco, TX", "Brownsville, TX", "Pasadena, TX", "Killeen, TX", "Mesodon, TX", "Denton, TX", "Waco, TX", "Midland, TX", "Carrollton, TX", "Round Rock, TX", "Abilene, TX", "Pearland, TX", "College Station, TX", "Richardson, TX", "The Woodlands, TX", "Beaumont, TX", "Odessa, TX", "Tyler, TX", "Wichita Falls, TX", "Lewisville, TX", "League City, TX", "San Angelo, TX", "Allen, TX", "Sugar Land, TX", "Edinburg, TX", "Conroe, TX", "Mission, TX", "Longview, TX", "Bryan, TX", "Pharr, TX", "Baytown, TX", "Missouri City, TX", "Temple, TX", "Flower Mound, TX", "New Braunfels, TX", "North Richland Hills, TX", "Victoria, TX", "Harlingen, TX", "Pflugerville, TX", "Grapevine, TX", "DeSoto, TX", "Marfa, TX", "Muleshoe, TX",
+  "New York, NY", "Los Angeles, CA", "Chicago, IL", "Phoenix, AZ", "Philadelphia, PA", "San Diego, CA", "San Jose, CA", "Jacksonville, FL", "Columbus, OH", "Indianapolis, IN", "Charlotte, NC", "San Francisco, CA", "Seattle, WA", "Denver, CO", "Washington, DC", "Boston, MA", "Nashville, TN", "Detroit, MI", "Oklahoma City, OK", "Portland, OR", "Las Vegas, NV", "Memphis, TN", "Louisville, KY", "Baltimore, MD", "Milwaukee, WI", "Albuquerque, NM", "Tucson, AZ", "Fresno, CA", "Sacramento, CA", "Kansas City, MO", "Mesa, AZ", "Atlanta, GA", "Omaha, NE", "Colorado Springs, CO", "Raleigh, NC", "Miami, FL", "Long Beach, CA", "Virginia Beach, VA", "Oakland, CA", "Minneapolis, MN", "Tulsa, OK", "Tampa, FL", "New Orleans, LA"
 ];
 
 const store = {
@@ -427,12 +428,24 @@ function todayStr(){ const d=new Date(); return d.toISOString().slice(0,10); }
 
 function populateCityDatalist(){
   const dl = document.getElementById('cityDatalist');
-  if(!dl) return;
+  const mdl = document.getElementById('modalCityDatalist');
   const set = new Set(US_CITIES);
   store.buyers.forEach(b=>{ if(b.city) set.add(b.city + (b.state? ', '+b.state : '')); });
-  dl.innerHTML = Array.from(set).map(c=>`<option value="${esc(c)}">`).join('');
+  const arr = Array.from(set).map(c=>`<option value="${esc(c)}">`).join('');
+  if(dl) dl.innerHTML = arr;
+  if(mdl) mdl.innerHTML = arr;
 }
 setTimeout(populateCityDatalist, 500);
+
+function onModalCityInput(inputEl){
+  const q = inputEl.value.toLowerCase().trim();
+  const mdl = document.getElementById('modalCityDatalist');
+  if(!mdl) return;
+  const set = new Set(US_CITIES);
+  store.buyers.forEach(b=>{ if(b.city) set.add(b.city + (b.state? ', '+b.state : '')); });
+  const matches = Array.from(set).filter(c => c.toLowerCase().includes(q));
+  mdl.innerHTML = matches.slice(0, 30).map(c=>`<option value="${esc(c)}">`).join('');
+}
 
 let editingFavs = [];
 let editingOffers = [];
@@ -777,7 +790,7 @@ function renderCityResults(){
 
   let html = '';
   if(q !== ''){
-    html += `<div style="padding:12px 16px; font-weight:600; color:var(--teal);">Suggested Cities Matching "${esc(q)}":</div>`;
+    html += `<div style="padding:12px 16px; font-weight:600; color:var(--teal);">suggested cities matching "${esc(q)}":</div>`;
     html += `<div style="padding:0 16px 12px; display:flex; flex-wrap:wrap; gap:6px;">`;
     matchedCitiesFromList.slice(0, 15).forEach(cityStr => {
       html += `<span class="chip" style="cursor:pointer;" onclick="document.getElementById('citySearch').value='${cityStr}'; renderCityResults();">${esc(cityStr)}</span>`;
