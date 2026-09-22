@@ -471,14 +471,32 @@
 
 <script>
 /* =========================================================
-   STORAGE
+   STORAGE & DATA
 ========================================================= */
 const store = {
-  buyers: JSON.parse(localStorage.getItem('crm_buyers')||'[]'),
-  tasks: JSON.parse(localStorage.getItem('crm_tasks')||'[]'),
+  buyers: [],
+  tasks: []
 };
-function saveBuyers(){ localStorage.setItem('crm_buyers', JSON.stringify(store.buyers)); }
-function saveTasks(){ localStorage.setItem('crm_tasks', JSON.stringify(store.tasks)); }
+
+async function loadDataFromFirebase() {
+  try {
+    const { collection, getDocs } = window.FirestoreModules;
+    const buyersSnap = await getDocs(collection(window.db, 'buyers'));
+    store.buyers = buyersSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    const tasksSnap = await getDocs(collection(window.db, 'tasks'));
+    store.tasks = tasksSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    renderDashboard();
+    renderBuyers();
+    renderTasks();
+  } catch (e) {
+    console.error("Error loading data: ", e);
+  }
+}
+
+if(window.db && window.FirestoreModules){
+  loadDataFromFirebase();
+}
+
 function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,7); }
 function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 
@@ -517,8 +535,7 @@ function todayStr(){ const d=new Date(); return d.toISOString().slice(0,10); }
 function addDays(str,n){ const d=new Date(str+'T00:00:00'); d.setDate(d.getDate()+n); return d.toISOString().slice(0,10); }
 
 /* =========================================================
-   LIVE CITY LOOKUP (covers every city — all of Texas included)
-   Uses OpenStreetMap's free Nominatim search, no key needed.
+   LIVE CITY LOOKUP
 ========================================================= */
 const cityCache = {};
 let cityDebounceTimer = null;
@@ -549,7 +566,7 @@ async function fetchCitySuggestions(q, datalistId){
     });
     cityCache[key] = names;
     fillDatalist(datalistId, names);
-  }catch(e){ /* offline or blocked — datalist just stays as-is */ }
+  }catch(e){}
 }
 function fillDatalist(datalistId, names){
   const dl = document.getElementById(datalistId);
@@ -558,8 +575,6 @@ function fillDatalist(datalistId, names){
 }
 const STATE_ABBR = {"Alabama":"AL","Alaska":"AK","Arizona":"AZ","Arkansas":"AR","California":"CA","Colorado":"CO","Connecticut":"CT","Delaware":"DE","Florida":"FL","Georgia":"GA","Hawaii":"HI","Idaho":"ID","Illinois":"IL","Indiana":"IN","Iowa":"IA","Kansas":"KS","Kentucky":"KY","Louisiana":"LA","Maine":"ME","Maryland":"MD","Massachusetts":"MA","Michigan":"MI","Minnesota":"MN","Mississippi":"MS","Missouri":"MO","Montana":"MT","Nebraska":"NE","Nevada":"NV","New Hampshire":"NH","New Jersey":"NJ","New Mexico":"NM","New York":"NY","North Carolina":"NC","North Dakota":"ND","Ohio":"OH","Oklahoma":"OK","Oregon":"OR","Pennsylvania":"PA","Rhode Island":"RI","South Carolina":"SC","South Dakota":"SD","Tennessee":"TN","Texas":"TX","Utah":"UT","Vermont":"VT","Virginia":"VA","Washington":"WA","West Virginia":"WV","Wisconsin":"WI","Wyoming":"WY","District of Columbia":"DC"};
 
-/* Auto-fill city & state from the typed street address */
-let geoDebounceTimer = null;
 async function autofillFromAddress(){
   const addr = document.getElementById('buyerAddress').value.trim();
   const statusEl = document.getElementById('geoStatus');
@@ -583,7 +598,7 @@ async function autofillFromAddress(){
     }
   }catch(e){
     statusEl.className = 'geo-status err';
-    statusEl.textContent = "Lookup failed (offline?) — type the city/state in yourself.";
+    statusEl.textContent = "Lookup failed — type the city/state in yourself.";
   }
 }
 
@@ -600,155 +615,158 @@ function renderDashboard(){
   const overdue = store.tasks.filter(t=>!t.done && t.dueDate && t.dueDate < today);
   const relevant = [...overdue, ...dueToday].sort((a,b)=> (a.dueDate+(a.dueTime||'')).localeCompare(b.dueDate+(b.dueTime||'')));
   const list = document.getElementById('dashTaskList');
-  list.innerHTML = relevant.length===0
-    ? '<div class="empty">Nothing due. Add a task to get reminded.</div>'
-    : relevant.slice(0,8).map(t=>taskRowHtml(t, overdue.includes(t))).join('');
-
-  const hot = store.buyers.filter(b=>b.status==='hot').sort((a,b)=>b.rating-a.rating);
-  const hotList = document.getElementById('dashHotList');
-  hotList.innerHTML = hot.length===0 ? '<div class="empty">No hot leads yet.</div>' : hot.slice(0,8).map(b=>`
-      <div class="buyer-row">
-        <div style="flex:1;">
-          <div class="buyer-name">${esc(b.name)}</div>
-          <div class="buyer-sub">${esc(b.city||'')}${b.state? ', '+esc(b.state):''} · rating ${b.rating}/10 · ${(b.offers||[]).length} offer${(b.offers||[]).length!==1?'s':''}</div>
-        </div>
-      </div>`).join('');
-
-  const banner = document.getElementById('dueBanner');
-  if(overdue.length>0){
-    banner.innerHTML = `<div class="banner brick"><span>${overdue.length} task${overdue.length!==1?'s are':' is'} overdue.</span><button onclick="document.querySelector('[data-page=tasks]').click()">View tasks</button></div>`;
-  } else if(dueToday.length>0){
-    banner.innerHTML = `<div class="banner"><span>${dueToday.length} task${dueToday.length!==1?'s':''} due today.</span><button onclick="document.querySelector('[data-page=tasks]').click()">View tasks</button></div>`;
-  } else banner.innerHTML='';
-
-  document.getElementById('taskDot').classList.toggle('show', overdue.length>0 || dueToday.length>0);
-  renderBell();
-  maybeShowNotifPrompt();
-}
-
-function taskRowHtml(t, isOverdue){
-  const buyer = store.buyers.find(b=>b.id===t.relatedBuyerId);
-  return `
-    <div class="task-row">
-      <div class="task-check ${t.done?'done':''}" onclick="toggleTask('${t.id}')"></div>
-      <div class="task-body" style="cursor:pointer;" onclick="openTaskModal('${t.id}')">
-        <div class="task-title ${t.done?'done':''}">${esc(t.title)}</div>
-        <div class="task-meta">
-          ${t.dueDate?esc(t.dueDate):''} ${t.dueTime?esc(t.dueTime):''}
-          ${buyer? ' · '+esc(buyer.name):''}
-          ${isOverdue? ' · <span class="badge overdue">Overdue</span>' : (t.dueDate===todayStr()? ' · <span class="badge today">Today</span>':'')}
+  if(relevant.length === 0){
+    list.innerHTML = '<div class="empty">No tasks due today</div>';
+  } else {
+    list.innerHTML = relevant.map(t=>`
+      <div class="task-row">
+        <div class="task-check ${t.done?'done':''}" onclick="toggleTask('${t.id}')"></div>
+        <div class="task-body">
+          <div class="task-title ${t.done?'done':''}">${esc(t.title)}</div>
+          <div class="task-meta">${esc(t.dueDate)}${t.dueTime?' at '+esc(t.dueTime):''}</div>
         </div>
       </div>
-    </div>`;
-}
+    `).join('');
+  }
 
-/* =========================================================
-   BELL
-========================================================= */
-function renderBell(){
-  const today = todayStr();
-  const due = store.tasks.filter(t=>!t.done && t.dueDate && t.dueDate<=today);
-  const countEl = document.getElementById('bellCount');
-  if(due.length>0){ countEl.style.display='flex'; countEl.textContent=due.length; } else countEl.style.display='none';
-  document.getElementById('bellList').innerHTML = due.length===0
-    ? '<div class="empty">You\'re all caught up.</div>'
-    : due.sort((a,b)=>(a.dueDate+(a.dueTime||'')).localeCompare(b.dueDate+(b.dueTime||''))).map(t=>taskRowHtml(t, t.dueDate<today)).join('');
-}
-function toggleBell(){ document.getElementById('bellDrop').classList.toggle('show'); }
-function closeBell(){ document.getElementById('bellDrop').classList.remove('show'); }
-document.addEventListener('click', e=>{
-  if(!e.target.closest('.bell-wrap')) closeBell();
-});
+  const hotList = document.getElementById('dashHotList');
+  const hotBuyers = store.buyers.filter(b=>b.status==='hot');
+  if(hotBuyers.length === 0){
+    hotList.innerHTML = '<div class="empty">No hot leads right now</div>';
+  } else {
+    hotList.innerHTML = hotBuyers.map(b=>`
+      <div class="buyer-row" style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--line);">
+        <div>
+          <div class="buyer-name">${esc(b.name)}</div>
+          <div class="buyer-sub">${esc(b.city||'')}${b.state?', '+esc(b.state):''}</div>
+        </div>
+        <button class="btn sm ghost" onclick="openBuyerModal('${b.id}')">View</button>
+      </div>
+    `).join('');
+  }
 
-function maybeShowNotifPrompt(){
-  const el = document.getElementById('notifPromptBanner');
-  if(!el) return;
-  if('Notification' in window && Notification.permission==='default' && !localStorage.getItem('notif_prompt_dismissed')){
-    el.innerHTML = `<div class="banner"><span>Turn on desktop notifications so tasks ping you the moment they're due.</span>
-      <span><button onclick="requestNotifPermission()">Enable</button> <button onclick="dismissNotifPrompt()" style="margin-left:6px;">Dismiss</button></span></div>`;
-  } else el.innerHTML='';
+  const dueBanner = document.getElementById('dueBanner');
+  if(overdue.length > 0){
+    dueBanner.innerHTML = `<div class="banner brick"><div>You have ${overdue.length} overdue task(s)</div><button onclick="document.querySelector('[data-page=tasks]').click()">View tasks</button></div>`;
+  } else {
+    dueBanner.innerHTML = '';
+  }
 }
-function dismissNotifPrompt(){ localStorage.setItem('notif_prompt_dismissed','1'); maybeShowNotifPrompt(); }
-function requestNotifPermission(){
-  if(!('Notification' in window)){ toast('Notifications are not supported in this browser.'); return; }
-  Notification.requestPermission().then(p=>{
-    updateNotifBtn();
-    if(p==='granted') toast('Notifications enabled.');
-    maybeShowNotifPrompt();
-  });
-}
-function updateNotifBtn(){
-  const btn = document.getElementById('notifBtn');
-  if(!btn) return;
-  if(!('Notification' in window)){ btn.textContent='Not supported'; btn.disabled=true; return; }
-  if(Notification.permission==='granted'){ btn.textContent='Notifications enabled ✓'; }
-  else if(Notification.permission==='denied'){ btn.textContent='Blocked in browser settings'; }
-  else btn.textContent='Enable notifications';
-}
-
-/* Check every 30s for newly-due tasks and fire a real notification once each */
-const notifiedIds = new Set(JSON.parse(sessionStorage.getItem('notified_ids')||'[]'));
-function checkDueNotifications(){
-  if(!('Notification' in window) || Notification.permission!=='granted') return;
-  const now = new Date();
-  store.tasks.forEach(t=>{
-    if(t.done || !t.dueDate) return;
-    const due = new Date(t.dueDate + 'T' + (t.dueTime||'00:00'));
-    if(due <= now && !notifiedIds.has(t.id)){
-      notifiedIds.add(t.id);
-      sessionStorage.setItem('notified_ids', JSON.stringify([...notifiedIds]));
-      try{ new Notification('Dealbook reminder', { body: t.title }); }catch(e){}
-    }
-  });
-}
-setInterval(()=>{ checkDueNotifications(); renderBell(); if(document.getElementById('page-dashboard').classList.contains('active')) renderDashboard(); }, 30000);
 
 /* =========================================================
    BUYERS
 ========================================================= */
-let editingFavs = [];
-let editingOffers = [];
+let currentEditingFavs = [];
+let currentEditingOffers = [];
+
+function renderBuyers(){
+  const q = document.getElementById('buyerSearch').value.toLowerCase();
+  const list = document.getElementById('buyerList');
+  const filtered = store.buyers.filter(b=>{
+    if(!q) return true;
+    const txt = (b.name + ' ' + (b.city||'') + ' ' + (b.state||'') + ' ' + (b.address||'') + ' ' + (b.phone||'')).toLowerCase();
+    return txt.includes(q);
+  });
+
+  if(filtered.length === 0){
+    list.innerHTML = '<div class="empty">No buyers found</div>';
+    return;
+  }
+
+  list.innerHTML = filtered.map(b=>`
+    <div class="buyer-row" style="display:flex;justify-content:space-between;align-items:flex-start;">
+      <div>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div class="buyer-name">${esc(b.name)}</div>
+          <span class="badge ${b.status}">${b.status}</span>
+          <span class="badge flag">Rating: ${b.rating || 7}/10</span>
+        </div>
+        <div class="buyer-sub">${esc(b.phone || 'No phone')} | ${esc(b.city || '')}${b.state?', '+esc(b.state):''}</div>
+        <div class="buyer-flags">
+          <span class="badge flag ${b.sawShowing?'':'off'}">Showing: ${b.sawShowing?'Yes':'No'}</span>
+          <span class="badge flag ${b.madeOffer?'':'off'}">Offer: ${b.madeOffer?'Yes':'No'}</span>
+        </div>
+        ${b.favs && b.favs.length ? `<div class="chip-list" style="margin-top:6px;">${b.favs.map(f=>`<span class="chip">${esc(f)}</span>`).join('')}</div>` : ''}
+        ${b.notes ? `<div class="key-note" style="margin-top:4px;">${esc(b.notes)}</div>` : ''}
+      </div>
+      <div class="buyer-actions">
+        <button class="btn sm ghost" onclick="openBuyerModal('${b.id}')">Edit</button>
+      </div>
+    </div>
+  `).join('');
+}
 
 function openBuyerModal(id){
-  document.getElementById('buyerModalTitle').textContent = id ? 'Edit buyer' : 'Add buyer';
-  document.getElementById('buyerId').value = id || '';
-  document.getElementById('buyerDeleteBtn').style.display = id ? 'inline-flex' : 'none';
-  const b = id ? store.buyers.find(x=>x.id===id) : null;
-  document.getElementById('buyerName').value = b?.name || '';
-  document.getElementById('buyerPhone').value = b?.phone || '';
-  document.getElementById('buyerAddress').value = b?.address || '';
-  document.getElementById('buyerCity').value = b?.city || '';
-  document.getElementById('buyerState').value = b?.state || '';
-  document.getElementById('buyerStatus').value = b?.status || 'warm';
-  document.getElementById('buyerRating').value = b?.rating || 7;
-  document.getElementById('ratingNum').textContent = b?.rating || 7;
-  document.getElementById('buyerSawShowing').checked = !!b?.sawShowing;
-  document.getElementById('buyerMadeOffer').checked = !!b?.madeOffer;
-  document.getElementById('buyerNotes').value = b?.notes || '';
+  const modal = document.getElementById('buyerModalBg');
+  modal.classList.add('show');
+  currentEditingFavs = [];
+  currentEditingOffers = [];
   document.getElementById('geoStatus').textContent = '';
-  editingFavs = b?.favorites ? [...b.favorites] : [];
-  editingOffers = b?.offers ? JSON.parse(JSON.stringify(b.offers)) : [];
+
+  if(id){
+    document.getElementById('buyerModalTitle').textContent = 'Edit buyer';
+    document.getElementById('buyerDeleteBtn').style.display = 'inline-flex';
+    const b = store.buyers.find(x=>x.id===id);
+    if(b){
+      document.getElementById('buyerId').value = b.id;
+      document.getElementById('buyerName').value = b.name || '';
+      document.getElementById('buyerPhone').value = b.phone || '';
+      document.getElementById('buyerAddress').value = b.address || '';
+      document.getElementById('buyerCity').value = b.city || '';
+      document.getElementById('buyerState').value = b.state || '';
+      document.getElementById('buyerStatus').value = b.status || 'hot';
+      document.getElementById('buyerRating').value = b.rating || 7;
+      document.getElementById('ratingNum').textContent = b.rating || 7;
+      document.getElementById('buyerSawShowing').checked = !!b.sawShowing;
+      document.getElementById('buyerMadeOffer').checked = !!b.madeOffer;
+      document.getElementById('buyerNotes').value = b.notes || '';
+      currentEditingFavs = [...(b.favs || [])];
+      currentEditingOffers = [...(b.offers || [])];
+    }
+  } else {
+    document.getElementById('buyerModalTitle').textContent = 'Add buyer';
+    document.getElementById('buyerDeleteBtn').style.display = 'none';
+    document.getElementById('buyerId').value = '';
+    document.getElementById('buyerName').value = '';
+    document.getElementById('buyerPhone').value = '';
+    document.getElementById('buyerAddress').value = '';
+    document.getElementById('buyerCity').value = '';
+    document.getElementById('buyerState').value = '';
+    document.getElementById('buyerStatus').value = 'hot';
+    document.getElementById('buyerRating').value = 7;
+    document.getElementById('ratingNum').textContent = '7';
+    document.getElementById('buyerSawShowing').checked = false;
+    document.getElementById('buyerMadeOffer').checked = false;
+    document.getElementById('buyerNotes').value = '';
+  }
   renderFavChips();
   renderOfferListEdit();
-  document.getElementById('offerLocation').value='';
-  document.getElementById('offerAmount').value='';
-  document.getElementById('offerDate').value='';
-  document.getElementById('offerNotes').value='';
-  document.getElementById('buyerModalBg').classList.add('show');
 }
-function closeBuyerModal(){ document.getElementById('buyerModalBg').classList.remove('show'); }
+
+function closeBuyerModal(){
+  document.getElementById('buyerModalBg').classList.remove('show');
+}
 
 function addFavChip(){
-  const inp = document.getElementById('favInput');
-  const v = inp.value.trim();
-  if(v && !editingFavs.includes(v)) editingFavs.push(v);
-  inp.value='';
+  const input = document.getElementById('favInput');
+  const val = input.value.trim();
+  if(val && !currentEditingFavs.includes(val)){
+    currentEditingFavs.push(val);
+    input.value = '';
+    renderFavChips();
+  }
+}
+
+function removeFavChip(idx){
+  currentEditingFavs.splice(idx,1);
   renderFavChips();
 }
-function removeFavChip(i){ editingFavs.splice(i,1); renderFavChips(); }
+
 function renderFavChips(){
-  document.getElementById('favChipList').innerHTML = editingFavs.map((f,i)=>
-    `<span class="chip">${esc(f)}<button onclick="removeFavChip(${i})">✕</button></span>`).join('');
+  const container = document.getElementById('favChipList');
+  container.innerHTML = currentEditingFavs.map((f,i)=>`
+    <span class="chip">${esc(f)} <button onclick="removeFavChip(${i})">&times;</button></span>
+  `).join('');
 }
 
 function addOfferToEdit(){
@@ -756,33 +774,43 @@ function addOfferToEdit(){
   const amt = document.getElementById('offerAmount').value.trim();
   const date = document.getElementById('offerDate').value;
   const notes = document.getElementById('offerNotes').value.trim();
-  if(!loc && !amt){ toast('Add a location or amount for the offer.'); return; }
-  editingOffers.push({ id: uid(), location: loc, amount: amt, date, notes });
-  document.getElementById('offerLocation').value='';
-  document.getElementById('offerAmount').value='';
-  document.getElementById('offerDate').value='';
-  document.getElementById('offerNotes').value='';
+  if(!loc || !amt) { toast('Enter location and amount'); return; }
+  currentEditingOffers.push({ id: uid(), location: loc, amount: amt, date: date || todayStr(), notes });
+  document.getElementById('offerLocation').value = '';
+  document.getElementById('offerAmount').value = '';
+  document.getElementById('offerDate').value = '';
+  document.getElementById('offerNotes').value = '';
   renderOfferListEdit();
 }
-function removeOfferFromEdit(i){ editingOffers.splice(i,1); renderOfferListEdit(); }
-function renderOfferListEdit(){
-  document.getElementById('offerListEdit').innerHTML = editingOffers.length===0
-    ? '<div class="field-note">No offers logged yet.</div>'
-    : editingOffers.map((o,i)=>`
-      <div class="offer-item">
-        <div>
-          <div class="oline1">${esc(o.location||'—')} ${o.amount? '· '+esc(o.amount):''}</div>
-          <div class="onotes">${o.date? esc(o.date)+' — ':''}${esc(o.notes||'')}</div>
-        </div>
-        <button onclick="removeOfferFromEdit(${i})">✕</button>
-      </div>`).join('');
+
+function removeOfferFromEdit(offerId){
+  currentEditingOffers = currentEditingOffers.filter(o=>o.id!==offerId);
+  renderOfferListEdit();
 }
 
-function saveBuyer(){
-  const name = document.getElementById('buyerName').value.trim();
-  if(!name){ toast('This buyer needs a name.'); return; }
+function renderOfferListEdit(){
+  const container = document.getElementById('offerListEdit');
+  if(currentEditingOffers.length === 0){
+    container.innerHTML = '<div style="font-size:12.5px;color:var(--ink-soft);">No offers added yet</div>';
+    return;
+  }
+  container.innerHTML = currentEditingOffers.map(o=>`
+    <div class="offer-item">
+      <div>
+        <div class="oline1">${esc(o.amount)} — ${esc(o.location)} (${esc(o.date)})</div>
+        ${o.notes ? `<div class="onotes">${esc(o.notes)}</div>` : ''}
+      </div>
+      <button onclick="removeOfferFromEdit('${o.id}')">&times;</button>
+    </div>
+  `).join('');
+}
+
+async function saveBuyer(){
   const id = document.getElementById('buyerId').value || uid();
-  const buyer = {
+  const name = document.getElementById('buyerName').value.trim();
+  if(!name){ toast('Buyer name is required'); return; }
+
+  const buyerData = {
     id,
     name,
     phone: document.getElementById('buyerPhone').value.trim(),
@@ -790,478 +818,341 @@ function saveBuyer(){
     city: document.getElementById('buyerCity').value.trim(),
     state: document.getElementById('buyerState').value.trim().toUpperCase(),
     status: document.getElementById('buyerStatus').value,
-    rating: parseInt(document.getElementById('buyerRating').value,10),
+    rating: parseInt(document.getElementById('buyerRating').value) || 7,
     sawShowing: document.getElementById('buyerSawShowing').checked,
     madeOffer: document.getElementById('buyerMadeOffer').checked,
-    favorites: [...editingFavs],
+    favs: currentEditingFavs,
     notes: document.getElementById('buyerNotes').value.trim(),
-    offers: [...editingOffers],
+    offers: currentEditingOffers
   };
+
   const idx = store.buyers.findIndex(b=>b.id===id);
-  if(idx>-1) store.buyers[idx] = buyer; else store.buyers.push(buyer);
-  saveBuyers();
+  if(idx >= 0){ store.buyers[idx] = buyerData; }
+  else { store.buyers.push(buyerData); }
+
+  if(window.db && window.FirestoreModules){
+    try {
+      const { doc, setDoc } = window.FirestoreModules;
+      await setDoc(doc(window.db, 'buyers', id), buyerData);
+    } catch(e){ console.error(e); }
+  }
+
   closeBuyerModal();
-  toast('Buyer saved.');
-  renderBuyers(); renderDashboard();
+  renderBuyers();
+  renderDashboard();
+  toast('Buyer saved');
 }
-function deleteBuyerFromModal(){
+
+async function deleteBuyerFromModal(){
   const id = document.getElementById('buyerId').value;
   if(!id) return;
   if(!confirm('Delete this buyer?')) return;
   store.buyers = store.buyers.filter(b=>b.id!==id);
-  saveBuyers();
+  if(window.db && window.FirestoreModules){
+    try {
+      const { doc, deleteDoc } = window.FirestoreModules;
+      await deleteDoc(doc(window.db, 'buyers', id));
+    } catch(e){ console.error(e); }
+  }
   closeBuyerModal();
-  toast('Buyer deleted.');
-  renderBuyers(); renderDashboard();
-}
-function toggleBuyerFlag(id, field){
-  const b = store.buyers.find(x=>x.id===id);
-  if(!b) return;
-  b[field] = !b[field];
-  saveBuyers();
   renderBuyers();
-}
-
-function renderBuyers(){
-  const q = (document.getElementById('buyerSearch')?.value || '').toLowerCase();
-  const list = store.buyers.filter(b=>{
-    if(!q) return true;
-    return [b.name,b.city,b.state,b.address,b.notes].some(v=>(v||'').toLowerCase().includes(q));
-  }).sort((a,b)=>b.rating-a.rating);
-  const el = document.getElementById('buyerList');
-  el.innerHTML = list.length===0 ? '<div class="empty">No buyers yet. Add your first one.</div>' : list.map(b=>`
-    <div class="buyer-row">
-      <div style="flex:1; cursor:pointer;" onclick="openBuyerModal('${b.id}')">
-        <div class="buyer-name">${esc(b.name)} <span class="badge ${esc(b.status)}">${esc(b.status)}</span></div>
-        <div class="buyer-sub">
-          ${b.address? esc(b.address)+' · ':''}${esc(b.city||'')}${b.state? ', '+esc(b.state):''}
-          ${b.phone? ' · '+esc(b.phone):''} · rating ${b.rating}/10 · ${(b.offers||[]).length} offer${(b.offers||[]).length!==1?'s':''}
-        </div>
-        ${b.favorites && b.favorites.length ? `<div class="chip-list">${b.favorites.map(f=>`<span class="chip">${esc(f)}</span>`).join('')}</div>` : ''}
-      </div>
-      <div class="buyer-flags" onclick="event.stopPropagation()">
-        <label><input type="checkbox" ${b.sawShowing?'checked':''} onchange="toggleBuyerFlag('${b.id}','sawShowing')"> Saw showing</label>
-        <label><input type="checkbox" ${b.madeOffer?'checked':''} onchange="toggleBuyerFlag('${b.id}','madeOffer')"> Made offer</label>
-      </div>
-      <div class="buyer-actions">
-        <button class="btn ghost sm" onclick="openBuyerModal('${b.id}')">Edit</button>
-      </div>
-    </div>`).join('');
+  renderDashboard();
+  toast('Buyer deleted');
 }
 
 /* =========================================================
    TASKS
 ========================================================= */
-function populateTaskBuyerSelect(){
-  const sel = document.getElementById('taskBuyer');
-  const current = sel.value;
-  sel.innerHTML = '<option value="">None</option>' + store.buyers.map(b=>`<option value="${b.id}">${esc(b.name)}</option>`).join('');
-  sel.value = current;
+function renderTasks(){
+  const list = document.getElementById('taskList');
+  if(store.tasks.length === 0){
+    list.innerHTML = '<div class="empty">No tasks created</div>';
+    return;
+  }
+  const sorted = [...store.tasks].sort((a,b)=>(a.dueDate||'').localeCompare(b.dueDate||''));
+  list.innerHTML = sorted.map(t=>`
+    <div class="task-row">
+      <div class="task-check ${t.done?'done':''}" onclick="toggleTask('${t.id}')"></div>
+      <div class="task-body" onclick="openTaskModal('${t.id}')" style="cursor:pointer;">
+        <div class="task-title ${t.done?'done':''}">${esc(t.title)}</div>
+        <div class="task-meta">${esc(t.dueDate || 'No date')}${t.dueTime?' at '+esc(t.dueTime):''} ${t.notes?'— '+esc(t.notes):''}</div>
+      </div>
+    </div>
+  `).join('');
 }
+
+async function toggleTask(id){
+  const t = store.tasks.find(x=>x.id===id);
+  if(!t) return;
+  t.done = !t.done;
+  if(window.db && window.FirestoreModules){
+    try {
+      const { doc, setDoc } = window.FirestoreModules;
+      await setDoc(doc(window.db, 'tasks', id), t);
+    } catch(e){ console.error(e); }
+  }
+  renderTasks();
+  renderDashboard();
+  renderBell();
+}
+
 function openTaskModal(id){
-  populateTaskBuyerSelect();
-  document.getElementById('taskModalTitle').textContent = id ? 'Edit task' : 'New task';
-  document.getElementById('taskId').value = id || '';
-  document.getElementById('taskDeleteBtn').style.display = id ? 'inline-flex' : 'none';
-  const t = id ? store.tasks.find(x=>x.id===id) : null;
-  document.getElementById('taskTitle').value = t?.title || '';
-  document.getElementById('taskDate').value = t?.dueDate || todayStr();
-  document.getElementById('taskTime').value = t?.dueTime || '';
-  document.getElementById('taskBuyer').value = t?.relatedBuyerId || '';
-  document.getElementById('taskNotes').value = t?.notes || '';
-  document.getElementById('taskModalBg').classList.add('show');
+  const modal = document.getElementById('taskModalBg');
+  modal.classList.add('show');
+  
+  const buyerSelect = document.getElementById('taskBuyer');
+  buyerSelect.innerHTML = '<option value="">None</option>' + store.buyers.map(b=>`<option value="${b.id}">${esc(b.name)}</option>`).join('');
+
+  if(id){
+    document.getElementById('taskModalTitle').textContent = 'Edit task';
+    document.getElementById('taskDeleteBtn').style.display = 'inline-flex';
+    const t = store.tasks.find(x=>x.id===id);
+    if(t){
+      document.getElementById('taskId').value = t.id;
+      document.getElementById('taskTitle').value = t.title || '';
+      document.getElementById('taskDate').value = t.dueDate || '';
+      document.getElementById('taskTime').value = t.dueTime || '';
+      document.getElementById('taskBuyer').value = t.buyerId || '';
+      document.getElementById('taskNotes').value = t.notes || '';
+    }
+  } else {
+    document.getElementById('taskModalTitle').textContent = 'New task';
+    document.getElementById('taskDeleteBtn').style.display = 'none';
+    document.getElementById('taskId').value = '';
+    document.getElementById('taskTitle').value = '';
+    document.getElementById('taskDate').value = todayStr();
+    document.getElementById('taskTime').value = '';
+    document.getElementById('taskBuyer').value = '';
+    document.getElementById('taskNotes').value = '';
+  }
 }
-function closeTaskModal(){ document.getElementById('taskModalBg').classList.remove('show'); }
-function saveTask(){
-  const title = document.getElementById('taskTitle').value.trim();
-  if(!title){ toast('This task needs a title.'); return; }
+
+function closeTaskModal(){
+  document.getElementById('taskModalBg').classList.remove('show');
+}
+
+async function saveTask(){
   const id = document.getElementById('taskId').value || uid();
-  const existing = store.tasks.find(t=>t.id===id);
-  const task = {
+  const title = document.getElementById('taskTitle').value.trim();
+  if(!title){ toast('Task title required'); return; }
+
+  const taskData = {
     id,
     title,
     dueDate: document.getElementById('taskDate').value,
     dueTime: document.getElementById('taskTime').value,
-    relatedBuyerId: document.getElementById('taskBuyer').value,
+    buyerId: document.getElementById('taskBuyer').value,
     notes: document.getElementById('taskNotes').value.trim(),
-    done: existing?.done || false,
+    done: false
   };
+
   const idx = store.tasks.findIndex(t=>t.id===id);
-  if(idx>-1) store.tasks[idx]=task; else store.tasks.push(task);
-  saveTasks();
+  if(idx >= 0){ taskData.done = store.tasks[idx].done; store.tasks[idx] = taskData; }
+  else { store.tasks.push(taskData); }
+
+  if(window.db && window.FirestoreModules){
+    try {
+      const { doc, setDoc } = window.FirestoreModules;
+      await setDoc(doc(window.db, 'tasks', id), taskData);
+    } catch(e){ console.error(e); }
+  }
+
   closeTaskModal();
-  toast('Task saved.');
-  renderTasks(); renderDashboard();
+  renderTasks();
+  renderDashboard();
+  renderBell();
+  toast('Task saved');
 }
-function deleteTaskFromModal(){
+
+async function deleteTaskFromModal(){
   const id = document.getElementById('taskId').value;
   if(!id) return;
   store.tasks = store.tasks.filter(t=>t.id!==id);
-  saveTasks();
+  if(window.db && window.FirestoreModules){
+    try {
+      const { doc, deleteDoc } = window.FirestoreModules;
+      await deleteDoc(doc(window.db, 'tasks', id));
+    } catch(e){ console.error(e); }
+  }
   closeTaskModal();
-  toast('Task deleted.');
-  renderTasks(); renderDashboard();
-}
-function toggleTask(id){
-  const t = store.tasks.find(x=>x.id===id);
-  if(!t) return;
-  t.done = !t.done;
-  saveTasks();
-  renderTasks(); renderDashboard();
-}
-function renderTasks(){
-  const today = todayStr();
-  const sorted = [...store.tasks].sort((a,b)=>{
-    if(a.done!==b.done) return a.done? 1 : -1;
-    return (a.dueDate+(a.dueTime||'')).localeCompare(b.dueDate+(b.dueTime||''));
-  });
-  const el = document.getElementById('taskList');
-  el.innerHTML = sorted.length===0 ? '<div class="empty">No tasks yet.</div>' : sorted.map(t=>taskRowHtml(t, !t.done && t.dueDate && t.dueDate<today)).join('');
+  renderTasks();
+  renderDashboard();
+  renderBell();
+  toast('Task deleted');
 }
 
 /* =========================================================
-   OFFERS TIMELINE
+   OFFERS TIMELINE & BY CITY
 ========================================================= */
 function renderOffersTimeline(){
-  const today = todayStr();
-  const tomorrow = addDays(today,1);
-  const all = [];
-  store.buyers.forEach(b=>(b.offers||[]).forEach(o=>all.push({...o, buyerName:b.name, buyerId:b.id})));
-  all.sort((a,b)=> (b.date||'').localeCompare(a.date||''));
-  const groups = { today:[], tomorrow:[], upcoming:[], past:[], undated:[] };
-  all.forEach(o=>{
-    if(!o.date) groups.undated.push(o);
-    else if(o.date===today) groups.today.push(o);
-    else if(o.date===tomorrow) groups.tomorrow.push(o);
-    else if(o.date>today) groups.upcoming.push(o);
-    else groups.past.push(o);
+  const container = document.getElementById('offersTimeline');
+  let allOffers = [];
+  store.buyers.forEach(b=>{
+    if(b.offers && b.offers.length){
+      b.offers.forEach(o=>allOffers.push({...o, buyerName: b.name, buyerId: b.id}));
+    }
   });
-  function groupHtml(title, items){
-    if(items.length===0) return '';
-    return `<div class="offer-group"><h3>${title} <span class="cnt">${items.length}</span></h3><div class="card">
-      ${items.map(o=>`
-        <div class="offer-item" style="cursor:pointer;" onclick="openBuyerModal('${o.buyerId}')">
-          <div>
-            <div class="oline1">${esc(o.buyerName)} — ${esc(o.location||'—')} ${o.amount? '· '+esc(o.amount):''}</div>
-            <div class="onotes">${o.date? esc(o.date)+' — ':''}${esc(o.notes||'')}</div>
-          </div>
-        </div>`).join('')}
-    </div></div>`;
+
+  if(allOffers.length === 0){
+    container.innerHTML = '<div class="card"><div class="empty">No offers recorded yet</div></div>';
+    return;
   }
-  const html = groupHtml('Today', groups.today) + groupHtml('Tomorrow', groups.tomorrow) + groupHtml('Upcoming', groups.upcoming) + groupHtml('Undated', groups.undated) + groupHtml('Past', groups.past);
-  document.getElementById('offersTimeline').innerHTML = html || '<div class="card empty">No offers logged yet. Add one from a buyer\'s profile.</div>';
+
+  allOffers.sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+  container.innerHTML = `
+    <div class="card" style="padding:18px 20px;">
+      ${allOffers.map(o=>`
+        <div class="offer-item" style="margin-bottom:12px;">
+          <div>
+            <div class="oline1">${esc(o.amount)} —${esc(o.location)}</div>
+            <div class="onotes">Buyer: <b>${esc(o.buyerName)}</b> | Date: ${esc(o.date)}${o.notes?'| '+esc(o.notes):''}</div>
+          </div>
+          <button class="btn sm ghost" onclick="openBuyerModal('${o.buyerId}')">View buyer</button>
+        </div>
+      `).join('')}
+    </div>
+  `;
 }
 
-/* =========================================================
-   BY CITY
-========================================================= */
 function renderCityResults(){
-  const q = (document.getElementById('citySearch').value||'').trim().toLowerCase();
-  const el = document.getElementById('cityResults');
-  if(!q){ el.innerHTML = '<div class="empty">Type a city to search.</div>'; return; }
-  const cityOnly = q.split(',')[0].trim();
-  const matches = store.buyers.filter(b=>{
-    const inBuyerCity = (b.city||'').toLowerCase().includes(cityOnly);
-    const inFavorites = (b.favorites||[]).some(f=>f.toLowerCase().includes(cityOnly));
-    const inOffers = (b.offers||[]).some(o=>(o.location||'').toLowerCase().includes(cityOnly));
-    return inBuyerCity || inFavorites || inOffers;
+  const q = document.getElementById('citySearch').value.trim().toLowerCase();
+  const container = document.getElementById('cityResults');
+  if(!q){ container.innerHTML = '<div class="empty">Type a city name to search</div>'; return; }
+
+  const matched = store.buyers.filter(b=>{
+    const c = (b.city||'').toLowerCase();
+    const st = (b.state||'').toLowerCase();
+    const full = c + ', ' + st;
+    return c.includes(q) || full.includes(q) || (b.favs && b.favs.some(f=>f.toLowerCase().includes(q)));
   });
-  if(matches.length===0){ el.innerHTML = `<div class="empty">No buyers linked to "${esc(document.getElementById('citySearch').value)}" yet.</div>`; return; }
-  el.innerHTML = `<div class="city-heading">${esc(document.getElementById('citySearch').value)} <span class="city-count">${matches.length} buyer${matches.length!==1?'s':''}</span></div>` +
-    matches.map(b=>`
-    <div class="buyer-row" style="cursor:pointer;" onclick="openBuyerModal('${b.id}')">
-      <div style="flex:1;">
-        <div class="buyer-name">${esc(b.name)} <span class="badge ${esc(b.status)}">${esc(b.status)}</span></div>
-        <div class="buyer-sub">${esc(b.city||'')}${b.state? ', '+esc(b.state):''} · rating ${b.rating}/10</div>
-        ${b.favorites && b.favorites.length ? `<div class="chip-list">${b.favorites.map(f=>`<span class="chip">${esc(f)}</span>`).join('')}</div>` : ''}
+
+  if(matched.length === 0){
+    container.innerHTML = `<div class="empty">No buyers found for "${esc(q)}"</div>`;
+    return;
+  }
+
+  container.innerHTML = `
+    <div class="city-heading">Buyers in or interested in "${esc(q)}" <span class="city-count">(${matched.length})</span></div>
+    ${matched.map(b=>`
+      <div class="buyer-row" style="display:flex;justify-content:space-between;align-items:center;">
+        <div>
+          <div class="buyer-name">${esc(b.name)}</div>
+          <div class="buyer-sub">${esc(b.city||'')}${b.state?', '+esc(b.state):''} \vert{} Phone: ${esc(b.phone||'N/A')}</div>
+        </div>
+        <button class="btn sm ghost" onclick="openBuyerModal('${b.id}')">View buyer</button>
       </div>
-    </div>`).join('');
+    `).join('')}
+  `;
 }
 
 /* =========================================================
-   SETTINGS / GEMINI KEY
+   BELL NOTIFICATIONS
+========================================================= */
+function toggleBell(){
+  const drop = document.getElementById('bellDrop');
+  drop.classList.toggle('show');
+  renderBell();
+}
+function closeBell(){
+  document.getElementById('bellDrop').classList.remove('show');
+}
+function renderBell(){
+  const today = todayStr();
+  const due = store.tasks.filter(t=>!t.done && t.dueDate && t.dueDate <= today);
+  const countEl = document.getElementById('bellCount');
+  if(due.length > 0){
+    countEl.style.display = 'flex';
+    countEl.textContent = due.length;
+  } else {
+    countEl.style.display = 'none';
+  }
+  const list = document.getElementById('bellList');
+  if(due.length === 0){
+    list.innerHTML = '<div class="empty">No pending tasks</div>';
+    return;
+  }
+  list.innerHTML = due.map(t=>`
+    <div style="padding:10px 14px;border-bottom:1px solid var(--line);font-size:13px;">
+      <div style="font-weight:600;">${esc(t.title)}</div>
+      <div style="color:var(--ink-soft);font-size:11.5px;">Due: ${esc(t.dueDate)}</div>
+    </div>
+  `).join('');
+}
+
+/* =========================================================
+   SETTINGS & GEMINI
 ========================================================= */
 function loadSettingsUI(){
-  const key = localStorage.getItem('gemini_api_key') || '';
+  const key = localStorage.getItem('dealbook_gemini_key') || '';
   document.getElementById('geminiKeyInput').value = key;
-  updateNotifBtn();
 }
+
 function saveGeminiKey(){
   const key = document.getElementById('geminiKeyInput').value.trim();
-  localStorage.setItem('gemini_api_key', key);
-  const note = document.getElementById('keySavedNote');
-  note.textContent = key ? 'Saved.' : 'Key cleared.';
-  setTimeout(()=>note.textContent='', 2500);
-  renderKeyWarning();
+  localStorage.setItem('dealbook_gemini_key', key);
+  document.getElementById('keySavedNote').textContent = 'Saved!';
+  setTimeout(()=>document.getElementById('keySavedNote').textContent='', 2000);
 }
+
 async function testGeminiKey(){
-  const note = document.getElementById('keySavedNote');
-  note.style.color = 'var(--teal)';
-  note.textContent = 'Testing...';
-  try{
-    await callGeminiRaw('Reply with just the word OK.');
-    note.textContent = 'Connected — Gemini responded.';
-  }catch(e){
-    note.style.color = 'var(--brick-dark)';
-    note.textContent = 'Failed: ' + e.message;
-  }
-  setTimeout(()=>{note.textContent=''; note.style.color='var(--teal)';}, 4000);
+  const key = document.getElementById('geminiKeyInput').value.trim();
+  if(!key){ toast('Enter an API key first'); return; }
+  try {
+    const res = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=' + key, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ contents: [{ parts: [{ text: 'Hello' }] }] })
+    });
+    if(res.ok){ toast('API key works successfully'); }
+    else { toast('API key test failed'); }
+  } catch(e){ toast('Error testing key'); }
 }
 
-/* =========================================================
-   GEMINI ASSISTANT
-   Reads/writes buyers, offers and tasks when asked.
-========================================================= */
-const GEMINI_MODEL = 'gemini-3.6-flash';
-let aiHistory = []; // {role:'user'|'model', text:'...'}
-
-function renderKeyWarning(){
-  const el = document.getElementById('aiKeyWarning');
-  const key = localStorage.getItem('gemini_api_key');
-  el.innerHTML = key ? '' : `<div class="gp-keywarning">No Gemini API key yet — add one on the Settings page to use the assistant.</div>`;
+function requestNotifPermission(){
+  if('Notification' in window){
+    Notification.requestPermission().then(perm=>{
+      if(perm==='granted'){ toast('Notifications enabled'); }
+      else { toast('Notification permission denied'); }
+    });
+  } else { toast('Notifications not supported'); }
 }
 
 function toggleGeminiPanel(){
   const panel = document.getElementById('geminiPanel');
   panel.classList.toggle('show');
-  if(panel.classList.contains('show')){
-    renderKeyWarning();
-    document.getElementById('bubblePulse').classList.remove('show');
-    if(aiHistory.length===0){
-      appendAiMsg('sys', "Try: \"Add a hot buyer named Sarah Kim in Odessa, TX who saw the showing\" or \"What tasks are overdue?\"");
-    }
-    document.getElementById('aiInput').focus();
-  }
-}
-function appendAiMsg(kind, text){
-  const log = document.getElementById('aiLog');
-  const div = document.createElement('div');
-  div.className = 'ai-msg ' + kind;
-  div.textContent = text;
-  log.appendChild(div);
-  log.scrollTop = log.scrollHeight;
-}
-
-function buildSystemInstruction(){
-  const buyersSummary = store.buyers.map(b=>({
-    id:b.id, name:b.name, city:b.city, state:b.state, status:b.status, rating:b.rating,
-    sawShowing:!!b.sawShowing, madeOffer:!!b.madeOffer, favorites:b.favorites||[],
-    offers:(b.offers||[]).map(o=>({id:o.id, location:o.location, amount:o.amount, date:o.date, notes:o.notes})),
-    notes:b.notes||''
-  }));
-  const tasksSummary = store.tasks.map(t=>({id:t.id, title:t.title, dueDate:t.dueDate, dueTime:t.dueTime, relatedBuyerId:t.relatedBuyerId, done:!!t.done, notes:t.notes||''}));
-  return `You are the built-in assistant inside "Dealbook", a real-estate buyer CRM. Today's date is ${todayStr()}.
-Current buyers (JSON): ${JSON.stringify(buyersSummary)}
-Current tasks (JSON): ${JSON.stringify(tasksSummary)}
-
-You can answer questions about this data directly in plain text.
-When the user asks you to ADD, EDIT, or DELETE a buyer, offer, or task, do it by ending your reply with a fenced JSON code block (\`\`\`json ... \`\`\`) containing an "actions" array. Supported action objects:
-- {"type":"add_buyer","name":"...","phone":"","address":"","city":"","state":"","status":"warm|hot|cold","rating":7,"sawShowing":false,"madeOffer":false,"favorites":[],"notes":""}
-- {"type":"update_buyer","buyer":"<id or name>","fields":{...any buyer fields to change...}}
-- {"type":"delete_buyer","buyer":"<id or name>"}
-- {"type":"add_offer","buyer":"<id or name>","location":"","amount":"","date":"YYYY-MM-DD","notes":""}
-- {"type":"add_task","title":"...","dueDate":"YYYY-MM-DD","dueTime":"HH:MM","relatedBuyer":"<id or name, optional>","notes":""}
-- {"type":"update_task","task":"<id or title>","fields":{...}}
-- {"type":"delete_task","task":"<id or title>"}
-- {"type":"complete_task","task":"<id or title>"}
-Always write a short, friendly plain-text sentence BEFORE the JSON block describing what you're doing. If the user is only asking a question, answer in plain text with no JSON block at all. Never wrap your whole reply in JSON — only the actions block.`;
-}
-
-async function callGeminiRaw(userText){
-  const key = localStorage.getItem('gemini_api_key');
-  if(!key) throw new Error('No API key saved yet — add one in Settings.');
-  const contents = [
-    ...aiHistory.map(m=>({role: m.role, parts:[{text:m.text}]})),
-    { role:'user', parts:[{text:userText}] }
-  ];
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`;
-  const res = await fetch(url, {
-    method:'POST',
-    headers:{ 'Content-Type':'application/json', 'x-goog-api-key': key },
-    body: JSON.stringify({
-      system_instruction: { parts:[{text: buildSystemInstruction()}] },
-      contents,
-      generationConfig: { temperature: 0.4 }
-    })
-  });
-  const data = await res.json();
-  if(!res.ok){
-    const msg = data?.error?.message || ('HTTP '+res.status);
-    throw new Error(msg);
-  }
-  const text = data?.candidates?.[0]?.content?.parts?.map(p=>p.text||'').join('') || '';
-  if(!text) throw new Error('Gemini returned an empty response.');
-  return text;
-}
-
-function findBuyerRef(ref){
-  if(!ref) return null;
-  let b = store.buyers.find(x=>x.id===ref);
-  if(b) return b;
-  const low = String(ref).toLowerCase();
-  return store.buyers.find(x=>x.name.toLowerCase()===low) ||
-         store.buyers.find(x=>x.name.toLowerCase().includes(low));
-}
-function findTaskRef(ref){
-  if(!ref) return null;
-  let t = store.tasks.find(x=>x.id===ref);
-  if(t) return t;
-  const low = String(ref).toLowerCase();
-  return store.tasks.find(x=>x.title.toLowerCase()===low) ||
-         store.tasks.find(x=>x.title.toLowerCase().includes(low));
-}
-
-function applyAiActions(actions){
-  let changedBuyers=false, changedTasks=false;
-  const results = [];
-  actions.forEach(a=>{
-    try{
-      switch(a.type){
-        case 'add_buyer': {
-          const b = { id: uid(), name:a.name||'Unnamed', phone:a.phone||'', address:a.address||'',
-            city:a.city||'', state:(a.state||'').toUpperCase(), status:a.status||'warm',
-            rating: a.rating!=null? parseInt(a.rating,10):7, sawShowing: !!a.sawShowing, madeOffer: !!a.madeOffer,
-            favorites: a.favorites||[], notes: a.notes||'', offers: [] };
-          store.buyers.push(b); changedBuyers=true;
-          results.push('Added buyer '+b.name+'.');
-          break;
-        }
-        case 'update_buyer': {
-          const b = findBuyerRef(a.buyer);
-          if(!b){ results.push('Could not find buyer "'+a.buyer+'".'); break; }
-          Object.assign(b, a.fields||{});
-          if(a.fields && a.fields.state) b.state = String(a.fields.state).toUpperCase();
-          changedBuyers=true;
-          results.push('Updated '+b.name+'.');
-          break;
-        }
-        case 'delete_buyer': {
-          const b = findBuyerRef(a.buyer);
-          if(!b){ results.push('Could not find buyer "'+a.buyer+'".'); break; }
-          store.buyers = store.buyers.filter(x=>x.id!==b.id);
-          changedBuyers=true;
-          results.push('Deleted '+b.name+'.');
-          break;
-        }
-        case 'add_offer': {
-          const b = findBuyerRef(a.buyer);
-          if(!b){ results.push('Could not find buyer "'+a.buyer+'".'); break; }
-          b.offers = b.offers||[];
-          b.offers.push({ id: uid(), location:a.location||'', amount:a.amount||'', date:a.date||'', notes:a.notes||'' });
-          b.madeOffer = true;
-          changedBuyers=true;
-          results.push('Logged an offer for '+b.name+'.');
-          break;
-        }
-        case 'add_task': {
-          const buyer = a.relatedBuyer ? findBuyerRef(a.relatedBuyer) : null;
-          const t = { id: uid(), title:a.title||'Untitled task', dueDate:a.dueDate||todayStr(), dueTime:a.dueTime||'',
-            relatedBuyerId: buyer? buyer.id : '', notes:a.notes||'', done:false };
-          store.tasks.push(t); changedTasks=true;
-          results.push('Added task "'+t.title+'".');
-          break;
-        }
-        case 'update_task': {
-          const t = findTaskRef(a.task);
-          if(!t){ results.push('Could not find task "'+a.task+'".'); break; }
-          Object.assign(t, a.fields||{});
-          changedTasks=true;
-          results.push('Updated task "'+t.title+'".');
-          break;
-        }
-        case 'delete_task': {
-          const t = findTaskRef(a.task);
-          if(!t){ results.push('Could not find task "'+a.task+'".'); break; }
-          store.tasks = store.tasks.filter(x=>x.id!==t.id);
-          changedTasks=true;
-          results.push('Deleted task "'+t.title+'".');
-          break;
-        }
-        case 'complete_task': {
-          const t = findTaskRef(a.task);
-          if(!t){ results.push('Could not find task "'+a.task+'".'); break; }
-          t.done = true;
-          changedTasks=true;
-          results.push('Marked "'+t.title+'" as done.');
-          break;
-        }
-        default:
-          results.push('Unknown action: '+a.type);
-      }
-    }catch(e){ results.push('Action failed: '+e.message); }
-  });
-  if(changedBuyers) saveBuyers();
-  if(changedTasks) saveTasks();
-  if(changedBuyers || changedTasks){ renderBuyers(); renderTasks(); renderDashboard(); renderOffersTimeline(); }
-  return results;
 }
 
 async function askGemini(){
   const input = document.getElementById('aiInput');
-  const text = input.value.trim();
-  if(!text) return;
-  input.value='';
-  appendAiMsg('user', text);
-  aiHistory.push({role:'user', text});
-  const key = localStorage.getItem('gemini_api_key');
-  if(!key){
-    appendAiMsg('err', 'Add a Gemini API key on the Settings page first.');
-    renderKeyWarning();
-    return;
-  }
-  appendAiMsg('sys', 'Thinking...');
+  const q = input.value.trim();
+  if(!q) return;
+  const key = localStorage.getItem('dealbook_gemini_key');
+  if(!key){ toast('Add your Gemini API key in Settings'); return; }
+
   const log = document.getElementById('aiLog');
-  try{
-    const reply = await callGeminiRaw(text);
-    log.lastChild.remove();
-    let plain = reply;
-    let actions = null;
-    const match = reply.match(/```json\s*([\s\S]*?)```/i);
-    if(match){
-      plain = reply.slice(0, match.index).trim();
-      try{
-        const parsed = JSON.parse(match[1]);
-        actions = parsed.actions || (Array.isArray(parsed)? parsed : null);
-      }catch(e){ /* ignore malformed json, just show text */ }
-    }
-    if(plain) appendAiMsg('ai', plain);
-    aiHistory.push({role:'model', text: reply});
-    if(actions && actions.length){
-      const results = applyAiActions(actions);
-      appendAiMsg('sys', results.join(' '));
-    }
-    if(!plain && (!actions || !actions.length)) appendAiMsg('ai', reply);
-  }catch(e){
-    log.lastChild.remove();
-    appendAiMsg('err', 'Gemini error: ' + e.message);
+  log.innerHTML += `<div class="ai-msg user">${esc(q)}</div>`;
+  input.value = '';
+  log.scrollTop = log.scrollHeight;
+
+  try {
+    const systemPrompt = "You are an assistant for Dealbook Buyer CRM. Current store state: " + JSON.stringify(store) + ". Help the user manage buyers and tasks.";
+    const res = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=' + key, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [
+          { role: 'user', parts: [{ text: systemPrompt + "\n\nUser request: " + q }] }
+        ]
+      })
+    });
+    const data = await res.json();
+    const reply = data.candidates?.[0]?.content?.parts?.[0]?.text || 'No response from Gemini';
+    log.innerHTML += `<div class="ai-msg ai">${esc(reply)}</div>`;
+    log.scrollTop = log.scrollHeight;
+  } catch(e){
+    log.innerHTML += `<div class="ai-msg err">Error communicating with Gemini</div>`;
   }
 }
-
-/* =========================================================
-   INIT
-========================================================= */
-renderDashboard();
-renderBuyers();
-renderTasks();
-updateNotifBtn();
-checkDueNotifications();
-</script>
-  <script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-import { getFirestore, collection, getDocs, addDoc, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-const firebaseConfig = {
-apiKey: "AIzaSyCLV2_E06813b3BG4FNqWmY0O6PEwXlpXQ",
-authDomain: "hafez-3c500.firebaseapp.com",
-projectId: "hafez-3c500",
-storageBucket: "hafez-3c500.firebasestorage.app",
-messagingSenderId: "375224887521",
-appId: "1:375224887521:web:3edc85221096d697dc2fa0",
-measurementId: "G-9NENKC5HQ5"
-};
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-window.db = db;
-window.FirestoreModules = { collection, getDocs, addDoc, deleteDoc, doc };
 </script>
 </body>
 </html>
