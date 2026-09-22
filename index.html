@@ -155,6 +155,27 @@
   .gp-keywarning{padding:10px 14px; background:#f2e6c9; color:#7a5a1c; font-size:12.5px; flex-shrink:0;}
   ::-webkit-scrollbar{width:9px;}
   ::-webkit-scrollbar-thumb{background:#cfc4a4; border-radius:6px;}
+
+  :root[data-theme="dark"]{
+    --ink:#efe8d8;
+    --ink-soft:#b3aa98;
+    --paper:#18160f;
+    --card:#221f18;
+    --line:#3a362a;
+    --brick:#c15a3f;
+    --brick-dark:#d16a4e;
+    --teal:#6fa688;
+    --teal-soft:#243128;
+    --gold:#d4a054;
+  }
+  :root[data-theme="dark"] input,
+  :root[data-theme="dark"] select,
+  :root[data-theme="dark"] textarea{
+    background:#1c1a13; color:var(--ink); border-color:var(--line);
+  }
+  :root[data-theme="dark"] .badge.hot{background:#3a2119; color:#f0a98d;}
+  :root[data-theme="dark"] .badge.warm{background:#332c17; color:#e0c284;}
+  #themeToggle{justify-content:space-between;}
 </style>
 </head>
 <body>
@@ -167,6 +188,7 @@
     <div class="nav-item" data-page="tasks">tasks</div>
     <div class="nav-item" data-page="city">by city</div>
     <div class="nav-item" data-page="settings">settings</div>
+    <div class="nav-item" id="themeToggle" onclick="toggleTheme()">🌙 dark mode</div>
     <div class="sidebar-foot">your data stays in firebase and browser</div>
   </div>
   <div class="main">
@@ -816,6 +838,192 @@ function renderCityResults(){
   container.innerHTML = html;
 }
 
+function applyTheme(theme){
+  document.documentElement.setAttribute('data-theme', theme);
+  const btn = document.getElementById('themeToggle');
+  if(btn) btn.textContent = theme==='dark' ? '☀️ light mode' : '🌙 dark mode';
+}
+function toggleTheme(){
+  const current = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
+  const next = current === 'dark' ? 'light' : 'dark';
+  localStorage.setItem('theme', next);
+  applyTheme(next);
+}
+applyTheme(localStorage.getItem('theme') || 'light');
+
+const GEMINI_TOOLS = [{
+  functionDeclarations: [
+    {
+      name: "add_buyer",
+      description: "Add a new buyer to the CRM",
+      parameters: {
+        type: "OBJECT",
+        properties: {
+          name: { type: "STRING" },
+          phone: { type: "STRING" },
+          address: { type: "STRING" },
+          city: { type: "STRING" },
+          state: { type: "STRING" },
+          status: { type: "STRING", enum: ["hot", "warm", "cold"] },
+          rating: { type: "NUMBER", description: "1 to 10" },
+          notes: { type: "STRING" }
+        },
+        required: ["name"]
+      }
+    },
+    {
+      name: "update_buyer",
+      description: "Update fields on an existing buyer, identified by id",
+      parameters: {
+        type: "OBJECT",
+        properties: {
+          id: { type: "STRING" },
+          name: { type: "STRING" },
+          phone: { type: "STRING" },
+          address: { type: "STRING" },
+          city: { type: "STRING" },
+          state: { type: "STRING" },
+          status: { type: "STRING", enum: ["hot", "warm", "cold"] },
+          rating: { type: "NUMBER" },
+          notes: { type: "STRING" }
+        },
+        required: ["id"]
+      }
+    },
+    {
+      name: "delete_buyer",
+      description: "Delete a buyer by id",
+      parameters: { type: "OBJECT", properties: { id: { type: "STRING" } }, required: ["id"] }
+    },
+    {
+      name: "add_task",
+      description: "Add a new task/reminder, optionally linked to a buyer id",
+      parameters: {
+        type: "OBJECT",
+        properties: {
+          title: { type: "STRING" },
+          dueDate: { type: "STRING", description: "YYYY-MM-DD, defaults to today" },
+          dueTime: { type: "STRING", description: "HH:MM 24h, optional" },
+          buyerId: { type: "STRING" },
+          notes: { type: "STRING" }
+        },
+        required: ["title"]
+      }
+    },
+    {
+      name: "toggle_task_done",
+      description: "Toggle a task's done status by id",
+      parameters: { type: "OBJECT", properties: { id: { type: "STRING" } }, required: ["id"] }
+    },
+    {
+      name: "delete_task",
+      description: "Delete a task by id",
+      parameters: { type: "OBJECT", properties: { id: { type: "STRING" } }, required: ["id"] }
+    }
+  ]
+}];
+
+async function callGeminiFunction(name, args){
+  args = args || {};
+  try{
+    if(name === 'add_buyer'){
+      const id = uid();
+      const buyer = {
+        name: args.name || 'unnamed',
+        phone: args.phone || '',
+        address: args.address || '',
+        city: args.city || '',
+        state: (args.state||'').toUpperCase(),
+        status: args.status || 'warm',
+        rating: args.rating || 7,
+        sawShowing: false,
+        madeOffer: false,
+        favs: [],
+        notes: args.notes || '',
+        offers: [],
+        updatedAt: new Date().toISOString()
+      };
+      store.buyers.push({ id, ...buyer });
+      if(window.db && window.FirestoreModules){
+        const { doc, setDoc } = window.FirestoreModules;
+        await setDoc(doc(window.db, 'buyers', id), buyer);
+      }
+      renderDashboard(); renderBuyers(); populateCityDatalist(); renderCityResults();
+      return { success:true, id, message:`added buyer ${buyer.name}` };
+    }
+    if(name === 'update_buyer'){
+      const b = store.buyers.find(x=>x.id===args.id);
+      if(!b) return { success:false, error:'buyer not found' };
+      ['name','status','rating','notes','phone','city','state','address'].forEach(k=>{
+        if(args[k]!==undefined) b[k]=args[k];
+      });
+      b.updatedAt = new Date().toISOString();
+      if(window.db && window.FirestoreModules){
+        const { doc, setDoc } = window.FirestoreModules;
+        const { id, ...rest } = b;
+        await setDoc(doc(window.db, 'buyers', id), rest, { merge:true });
+      }
+      renderDashboard(); renderBuyers(); populateCityDatalist(); renderCityResults();
+      return { success:true, message:`updated buyer ${b.name}` };
+    }
+    if(name === 'delete_buyer'){
+      const b = store.buyers.find(x=>x.id===args.id);
+      if(!b) return { success:false, error:'buyer not found' };
+      store.buyers = store.buyers.filter(x=>x.id!==args.id);
+      if(window.db && window.FirestoreModules){
+        const { doc, deleteDoc } = window.FirestoreModules;
+        await deleteDoc(doc(window.db, 'buyers', args.id));
+      }
+      renderDashboard(); renderBuyers(); populateCityDatalist(); renderCityResults();
+      return { success:true, message:`deleted buyer ${b.name}` };
+    }
+    if(name === 'add_task'){
+      const id = uid();
+      const task = {
+        title: args.title,
+        dueDate: args.dueDate || todayStr(),
+        dueTime: args.dueTime || '',
+        buyerId: args.buyerId || '',
+        notes: args.notes || '',
+        done:false,
+        updatedAt: new Date().toISOString()
+      };
+      store.tasks.push({ id, ...task });
+      if(window.db && window.FirestoreModules){
+        const { doc, setDoc } = window.FirestoreModules;
+        await setDoc(doc(window.db, 'tasks', id), task);
+      }
+      renderDashboard(); renderTasks();
+      return { success:true, id, message:`added task ${task.title}` };
+    }
+    if(name === 'toggle_task_done'){
+      const t = store.tasks.find(x=>x.id===args.id);
+      if(!t) return { success:false, error:'task not found' };
+      t.done = !t.done;
+      if(window.db && window.FirestoreModules){
+        const { doc, setDoc } = window.FirestoreModules;
+        await setDoc(doc(window.db, 'tasks', t.id), t, { merge:true });
+      }
+      renderDashboard(); renderTasks();
+      return { success:true, message:`task ${t.title} now ${t.done?'done':'not done'}` };
+    }
+    if(name === 'delete_task'){
+      const t = store.tasks.find(x=>x.id===args.id);
+      if(!t) return { success:false, error:'task not found' };
+      store.tasks = store.tasks.filter(x=>x.id!==args.id);
+      if(window.db && window.FirestoreModules){
+        const { doc, deleteDoc } = window.FirestoreModules;
+        await deleteDoc(doc(window.db, 'tasks', args.id));
+      }
+      renderDashboard(); renderTasks();
+      return { success:true, message:`deleted task ${t.title}` };
+    }
+    return { success:false, error:'unknown function '+name };
+  } catch(e){
+    return { success:false, error:String(e) };
+  }
+}
+
 function toggleGeminiPanel(){
   const p = document.getElementById('geminiPanel');
   p.classList.toggle('show');
@@ -843,24 +1051,41 @@ async function askGemini(){
   log.innerHTML += '<div class="ai-msg user">'+esc(q)+'</div>';
   input.value = '';
   log.scrollTop = log.scrollHeight;
+
+  const systemText = "you are an assistant for a real estate wholesaling crm called dealbook. " +
+    "you have full access to read AND modify the data through the tools provided (add/update/delete buyers and tasks) — always call the right tool to actually make a change the user asks for, don't just describe it, then confirm briefly in plain text what you did. " +
+    "current buyers (with their ids): " + JSON.stringify(store.buyers) + ". current tasks (with their ids): " + JSON.stringify(store.tasks) + ". " +
+    "today's date is " + todayStr() + ". user message: " + q;
+
+  let contents = [{ role: 'user', parts: [{ text: systemText }] }];
+
   try {
-    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${key}`, {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({
-        contents: [{
-          parts: [{
-            text: "you are an assistant for a real estate wholesaling crm called dealbook. current buyers: " + JSON.stringify(store.buyers) + ". tasks: " + JSON.stringify(store.tasks) + ". user question: " + q
-          }]
-        }]
-      })
-    });
-    const data = await res.json();
-    if(data.error){
-      log.innerHTML += '<div class="ai-msg err">api error: '+esc(data.error.message)+'</div>';
-    } else {
-      const text = data.candidates?.[0]?.content?.parts?.[0]?.text || 'no response';
+    for(let turn=0; turn<6; turn++){
+      const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${key}`, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ contents, tools: GEMINI_TOOLS })
+      });
+      const data = await res.json();
+      if(data.error){
+        log.innerHTML += '<div class="ai-msg err">api error: '+esc(data.error.message)+'</div>';
+        break;
+      }
+      const parts = data.candidates?.[0]?.content?.parts || [];
+      const functionCalls = parts.filter(p=>p.functionCall);
+      if(functionCalls.length){
+        contents.push({ role:'model', parts });
+        const responseParts = [];
+        for(const fc of functionCalls){
+          const result = await callGeminiFunction(fc.functionCall.name, fc.functionCall.args);
+          responseParts.push({ functionResponse: { name: fc.functionCall.name, response: result } });
+        }
+        contents.push({ role:'user', parts: responseParts });
+        continue;
+      }
+      const text = parts.map(p=>p.text).filter(Boolean).join('\n') || 'no response';
       log.innerHTML += '<div class="ai-msg ai">'+esc(text)+'</div>';
+      break;
     }
   } catch(e) {
     log.innerHTML += '<div class="ai-msg err">network error calling gemini api</div>';
@@ -880,7 +1105,7 @@ async function testGeminiKey(){
   const k = document.getElementById('geminiKeyInput').value.trim() || localStorage.getItem('geminiKey');
   if(!k){ alert('enter a key first'); return; }
   try {
-    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${k}`, {
+    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${k}`, {
       method: 'POST',
       headers: {'Content-Type': 'application/json'},
       body: JSON.stringify({ contents: [{ parts: [{ text: 'hello' }] }] })
